@@ -245,18 +245,13 @@ def get_dataset(source_type, file_upload):
             return None, False
     else:
         try:
-            # Temporary file write or buffer read
-            df = load_data(file_upload.name) if hasattr(file_upload, 'name') else None
-            if df is None:
-                # Fallback to buffer
-                if file_upload.name.endswith('.csv'):
-                    df = pd.read_csv(file_upload)
-                else:
-                    df = pd.read_excel(file_upload)
+            # Pass the uploaded file object itself to load_data
+            df = load_data(file_upload)
             return df, False
         except Exception as e:
             st.error(f"Error reading uploaded file: {e}. Please check file structure.")
             return None, False
+
 
 df_raw, is_sample = get_dataset(data_source, uploaded_file)
 

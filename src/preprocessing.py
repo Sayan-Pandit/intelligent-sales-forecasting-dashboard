@@ -1,17 +1,41 @@
 import pandas as pd
 import numpy as np
 
-def load_data(file_path):
+def load_data(file_input):
     """
-    Loads sales data from a CSV or Excel file.
+    Loads sales data from a CSV or Excel file (either local path string or file-like buffer).
     """
-    if file_path.endswith('.csv'):
-        df = pd.read_csv(file_path)
-    elif file_path.endswith(('.xls', '.xlsx')):
-        df = pd.read_excel(file_path)
+    if isinstance(file_input, str):
+        file_name = file_input
+    elif hasattr(file_input, 'name'):
+        file_name = file_input.name
+    else:
+        raise ValueError("Invalid file input type. Must be a file path string or UploadedFile.")
+        
+    if file_name.endswith('.csv'):
+        try:
+            df = pd.read_csv(file_input)
+        except (UnicodeDecodeError, Exception) as e:
+            # If standard utf-8 fails, try common fallbacks
+            if hasattr(file_input, 'seek'):
+                file_input.seek(0)
+            try:
+                df = pd.read_csv(file_input, encoding='latin1')
+            except Exception:
+                if hasattr(file_input, 'seek'):
+                    file_input.seek(0)
+                try:
+                    df = pd.read_csv(file_input, encoding='cp1252')
+                except Exception:
+                    # Reraise the original UnicodeDecodeError if everything fails
+                    raise e
+    elif file_name.endswith(('.xls', '.xlsx')):
+        df = pd.read_excel(file_input)
     else:
         raise ValueError("Unsupported file format. Please upload a CSV or Excel file.")
     return df
+
+
 
 def clean_data(df):
     """
