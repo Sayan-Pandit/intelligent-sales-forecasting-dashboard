@@ -6,7 +6,7 @@ from datetime import datetime
 
 # Import local modules
 from src.sample_generator import generate_sample_data
-from src.preprocessing import load_data, clean_data, engineer_features, aggregate_data
+from src.preprocessing import load_data, clean_data, engineer_features, aggregate_data, suggest_mappings, map_and_clean_data
 from src.forecasting import train_prophet_model, train_regression_model
 from src.visualization import (
     plot_sales_trend, 
@@ -257,10 +257,41 @@ df_raw, is_sample = get_dataset(data_source, uploaded_file)
 
 if df_raw is not None:
     try:
+        # Column Mapping Section in Sidebar
+        st.sidebar.markdown("## 🎯 Column Mapping")
+        columns_list = list(df_raw.columns)
+        
+        suggested_date, suggested_sales = suggest_mappings(df_raw)
+        
+        # Selectbox for Date Column
+        date_index = columns_list.index(suggested_date) if suggested_date in columns_list else 0
+        selected_date_col = st.sidebar.selectbox(
+            "Select Date Column",
+            options=columns_list,
+            index=date_index,
+            help="Choose the column containing timestamps or dates."
+        )
+        
+        # Selectbox for Sales Column
+        sales_index = columns_list.index(suggested_sales) if suggested_sales in columns_list else 0
+        selected_sales_col = st.sidebar.selectbox(
+            "Select Sales / Revenue Column",
+            options=columns_list,
+            index=sales_index,
+            help="Choose the numerical column representing target sales/revenue to forecast."
+        )
+
         # Preprocessing & cleaning
-        df_cleaned = clean_data(df_raw)
+        df_cleaned = map_and_clean_data(df_raw, selected_date_col, selected_sales_col)
         df_engineered = engineer_features(df_cleaned)
         
+        # Identify other categorical columns for filtering
+        categorical_cols = []
+        for col in df_cleaned.columns:
+            if col not in ['Date', 'Sales_Revenue', 'Units_Sold', 'Price_Per_Unit', 'Discount', 'Year', 'Month', 'Quarter', 'DayOfWeek', 'IsWeekend', 'MonthName', 'DayOfYear']:
+                if df_cleaned[col].dtype == 'object' or df_cleaned[col].nunique() < 15:
+                    categorical_cols.append(col)
+
         # Sidebar Filter Controls
         st.sidebar.markdown("## 🔍 Filtering Options")
         
@@ -275,32 +306,31 @@ if df_raw is not None:
             max_value=max_date
         )
         
-        # Region and Product Category filters
-        all_regions = sorted(df_engineered['Region'].unique().tolist())
-        selected_regions = st.sidebar.multiselect(
-            "Select Regions",
-            options=all_regions,
-            default=all_regions
-        )
-        
-        all_categories = sorted(df_engineered['Product_Category'].unique().tolist())
-        selected_categories = st.sidebar.multiselect(
-            "Select Product Categories",
-            options=all_categories,
-            default=all_categories
-        )
-        
-        # Apply filters
         # Handle date range selection correctly
         start_date = pd.to_datetime(selected_dates[0]) if len(selected_dates) >= 1 else pd.to_datetime(min_date)
         end_date = pd.to_datetime(selected_dates[1]) if len(selected_dates) >= 2 else pd.to_datetime(max_date)
         
         df_filtered = df_engineered[
             (df_engineered['Date'] >= start_date) & 
-            (df_engineered['Date'] <= end_date) & 
-            (df_engineered['Region'].isin(selected_regions)) & 
-            (df_engineered['Product_Category'].isin(selected_categories))
+            (df_engineered['Date'] <= end_date)
         ]
+        
+        # Dynamic Categorical Filters (Support up to 3 filters in sidebar)
+        active_filters = {}
+        for col in categorical_cols[:3]:
+            unique_vals = sorted(df_filtered[col].dropna().unique().tolist())
+            selected_vals = st.sidebar.multiselect(
+                f"Filter by {col.replace('_', ' ').title()}",
+                options=unique_vals,
+                default=unique_vals,
+                key=f"filter_{col}"
+            )
+            active_filters[col] = selected_vals
+            
+        # Apply categorical filters
+        for col, selected_vals in active_filters.items():
+            if selected_vals:
+                df_filtered = df_filtered[df_filtered[col].isin(selected_vals)]
         
         if df_filtered.empty:
             st.warning("No data matches the selected filters. Please adjust your criteria.")
@@ -382,14 +412,19 @@ if df_raw is not None:
                 fig_trend = plot_sales_trend(df_filtered)
                 st.plotly_chart(fig_trend, use_container_width=True, key="executive_trend_chart")
                 
+                # Define columns to plot dynamically
+                region_plot_col = 'Region' if 'Region' in df_filtered.columns else (categorical_cols[0] if len(categorical_cols) > 0 else None)
+                category_plot_col = 'Product_Category' if 'Product_Category' in df_filtered.columns else (categorical_cols[1] if len(categorical_cols) > 1 else (categorical_cols[0] if len(categorical_cols) > 0 else None))
+                product_plot_col = 'Product' if 'Product' in df_filtered.columns else (categorical_cols[2] if len(categorical_cols) > 2 else (categorical_cols[0] if len(categorical_cols) > 0 else None))
+
                 col_left, col_right = st.columns(2)
                 with col_left:
                     # Regional sales donut
-                    fig_region = plot_regional_analysis(df_filtered)
+                    fig_region = plot_regional_analysis(df_filtered, region_col=region_plot_col)
                     st.plotly_chart(fig_region, use_container_width=True, key="executive_regional_chart")
                 with col_right:
                     # Product category bar chart
-                    fig_product = plot_product_analysis(df_filtered)
+                    fig_product = plot_product_analysis(df_filtered, category_col=category_plot_col)
                     st.plotly_chart(fig_product, use_container_width=True, key="executive_product_chart")
             
             # --- TAB 2: Deep-Dive Insights ---
@@ -397,10 +432,16 @@ if df_raw is not None:
                 st.subheader("Interactive Sales Analysis")
                 st.markdown("Drill down into product elasticities and category breakdowns.")
                 
+                # Fetch categories for selection dropdown
+                if category_plot_col and category_plot_col in df_filtered.columns:
+                    all_categories = sorted(df_filtered[category_plot_col].dropna().unique().tolist())
+                else:
+                    all_categories = []
+                
                 col_ctrl1, col_ctrl2 = st.columns(2)
                 with col_ctrl1:
                     category_drilldown = st.selectbox(
-                        "Drilldown Category Details",
+                        f"Drilldown {category_plot_col.replace('_', ' ').title() if category_plot_col else 'Category'} Details",
                         options=[None] + all_categories,
                         format_func=lambda x: "All Categories" if x is None else x
                     )
@@ -410,33 +451,34 @@ if df_raw is not None:
                 col_dleft, col_dright = st.columns(2)
                 with col_dleft:
                     # Category or product specific bar chart
-                    fig_prod_drill = plot_product_analysis(df_filtered, category=category_drilldown)
+                    fig_prod_drill = plot_product_analysis(df_filtered, category=category_drilldown, category_col=category_plot_col, product_col=product_plot_col)
                     st.plotly_chart(fig_prod_drill, use_container_width=True, key="drilldown_product_chart")
                 with col_dright:
                     # Elasticity scatter plot
-                    fig_elasticity = plot_price_vs_volume(df_filtered)
+                    fig_elasticity = plot_price_vs_volume(df_filtered, category_col=category_plot_col)
                     st.plotly_chart(fig_elasticity, use_container_width=True, key="drilldown_elasticity_chart")
                     
                 # Extra statistics table
-                st.subheader("Performance Summary by Category")
-                summary_df = df_filtered.groupby('Product_Category').agg({
-                    'Sales_Revenue': 'sum',
-                    'Units_Sold': 'sum',
-                    'Price_Per_Unit': 'mean',
-                    'Discount': 'mean'
-                }).rename(columns={
-                    'Sales_Revenue': 'Total Revenue ($)',
-                    'Units_Sold': 'Total Units Sold',
-                    'Price_Per_Unit': 'Avg Price ($)',
-                    'Discount': 'Avg Discount (%)'
-                })
-                summary_df['Avg Discount (%)'] = summary_df['Avg Discount (%)'] * 100
-                st.dataframe(summary_df.style.format({
-                    'Total Revenue ($)': '{:,.2f}',
-                    'Total Units Sold': '{:,}',
-                    'Avg Price ($)': '{:,.2f}',
-                    'Avg Discount (%)': '{:.2f}%'
-                }), use_container_width=True)
+                if category_plot_col and category_plot_col in df_filtered.columns:
+                    st.subheader(f"Performance Summary by {category_plot_col.replace('_', ' ').title()}")
+                    summary_df = df_filtered.groupby(category_plot_col).agg({
+                        'Sales_Revenue': 'sum',
+                        'Units_Sold': 'sum',
+                        'Price_Per_Unit': 'mean',
+                        'Discount': 'mean'
+                    }).rename(columns={
+                        'Sales_Revenue': 'Total Revenue ($)',
+                        'Units_Sold': 'Total Units Sold',
+                        'Price_Per_Unit': 'Avg Price ($)',
+                        'Discount': 'Avg Discount (%)'
+                    })
+                    summary_df['Avg Discount (%)'] = summary_df['Avg Discount (%)'] * 100
+                    st.dataframe(summary_df.style.format({
+                        'Total Revenue ($)': '{:,.2f}',
+                        'Total Units Sold': '{:,}',
+                        'Avg Price ($)': '{:,.2f}',
+                        'Avg Discount (%)': '{:.2f}%'
+                    }), use_container_width=True)
                 
             # --- TAB 3: Future Prediction ---
             with tabs[2]:
@@ -449,7 +491,7 @@ if df_raw is not None:
                     with col_f1:
                         model_choice = st.selectbox(
                             "Select Forecasting Model",
-                            options=["Prophet / Time Series", "Random Forest Regressor", "XGBoost Regressor"],
+                            options=["Prophet / Time Series", "Random Forest Regressor", "XGBoost Regressor", "MLP Neural Network"],
                             help="Choose Prophet for classical trend/seasonality modeling, or regression-based models for lag-based supervised forecasting."
                         )
                     with col_f2:
@@ -477,8 +519,14 @@ if df_raw is not None:
                                     forecast_df, name = train_prophet_model(df_monthly, horizon_months=horizon)
                                     metrics = None
                                 else:
-                                    model_code = 'rf' if model_choice == "Random Forest Regressor" else 'xgb'
+                                    if model_choice == "Random Forest Regressor":
+                                        model_code = 'rf'
+                                    elif model_choice == "MLP Neural Network":
+                                        model_code = 'mlp'
+                                    else:
+                                        model_code = 'xgb'
                                     forecast_df, metrics, name = train_regression_model(df_monthly, horizon_months=horizon, model_type=model_code)
+
                                     
                                 # Display metrics if available
                                 if metrics:

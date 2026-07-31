@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.neural_network import MLPRegressor
 from xgboost import XGBRegressor
 
 try:
@@ -172,9 +173,18 @@ def train_regression_model(df_agg, horizon_months=6, model_type='rf'):
     if model_type == 'rf':
         model = RandomForestRegressor(n_estimators=100, random_state=42)
         model_name = "Random Forest Regressor"
+    elif model_type == 'mlp':
+        from sklearn.preprocessing import StandardScaler
+        from sklearn.pipeline import Pipeline
+        model = Pipeline([
+            ('scaler', StandardScaler()),
+            ('mlp', MLPRegressor(hidden_layer_sizes=(64, 32), max_iter=1000, random_state=42, early_stopping=True))
+        ])
+        model_name = "MLP Neural Network"
     else:
         model = XGBRegressor(n_estimators=100, learning_rate=0.05, random_state=42)
         model_name = "XGBoost Regressor"
+
         
     model.fit(X_train, y_train)
     

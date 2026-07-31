@@ -73,19 +73,33 @@ def plot_sales_trend(df):
     
     return apply_layout_theme(fig)
 
-def plot_product_analysis(df, category=None):
+def plot_product_analysis(df, category=None, category_col='Product_Category', product_col='Product'):
     """
     Plots product sales revenue breakdown.
     If category is provided, drills down to specific products in that category.
     """
-    if category:
-        filtered_df = df[df['Product_Category'] == category]
-        group_col = 'Product'
-        title = f"Sales Revenue by Product in {category}"
+    # Check if specified columns exist, otherwise find fallbacks
+    if category_col not in df.columns:
+        other_cols = [c for c in df.columns if c not in ['Date', 'Sales_Revenue', 'Units_Sold', 'Price_Per_Unit', 'Discount', 'Year', 'Month', 'Quarter', 'DayOfWeek', 'IsWeekend', 'MonthName', 'DayOfYear']]
+        category_col = other_cols[0] if len(other_cols) > 0 else None
+        
+    if category_col is None:
+        # If no categorical columns exist, return an empty placeholder figure
+        fig = go.Figure()
+        fig.update_layout(title="No categorical breakdown available")
+        return apply_layout_theme(fig)
+        
+    if category and category_col in df.columns:
+        # If product_col doesn't exist, we fallback
+        if product_col not in df.columns:
+            product_col = category_col
+        filtered_df = df[df[category_col] == category]
+        group_col = product_col
+        title = f"Sales Revenue by {product_col} in {category}"
     else:
         filtered_df = df
-        group_col = 'Product_Category'
-        title = "Sales Revenue by Product Category"
+        group_col = category_col
+        title = f"Sales Revenue by {category_col.replace('_', ' ')}"
         
     prod_sales = filtered_df.groupby(group_col).agg({
         'Sales_Revenue': 'sum',
@@ -114,16 +128,25 @@ def plot_product_analysis(df, category=None):
     
     return apply_layout_theme(fig)
 
-def plot_regional_analysis(df):
+def plot_regional_analysis(df, region_col='Region'):
     """
     Plots a donut chart for regional sales share.
     """
-    region_sales = df.groupby('Region').agg({'Sales_Revenue': 'sum'}).reset_index()
+    if region_col not in df.columns:
+        other_cols = [c for c in df.columns if c not in ['Date', 'Sales_Revenue', 'Units_Sold', 'Price_Per_Unit', 'Discount', 'Year', 'Month', 'Quarter', 'DayOfWeek', 'IsWeekend', 'MonthName', 'DayOfYear']]
+        region_col = other_cols[-1] if len(other_cols) > 0 else None
+        
+    if region_col is None:
+        fig = go.Figure()
+        fig.update_layout(title="No breakdown available")
+        return apply_layout_theme(fig)
+        
+    region_sales = df.groupby(region_col).agg({'Sales_Revenue': 'sum'}).reset_index()
     
     fig = px.pie(
         region_sales,
         values='Sales_Revenue',
-        names='Region',
+        names=region_col,
         hole=0.4,
         color_discrete_sequence=[COLORS['primary'], COLORS['secondary'], COLORS['accent'], COLORS['contrast']]
     )
@@ -131,30 +154,36 @@ def plot_regional_analysis(df):
     fig.update_traces(
         textposition='inside',
         textinfo='percent+label',
-        hovertemplate='<b>Region</b>: %{label}<br><b>Revenue</b>: $%{value:,.2f}<br><b>Share</b>: %{percent}<extra></extra>'
+        hovertemplate='<b>' + region_col + '</b>: %{label}<br><b>Revenue</b>: $%{value:,.2f}<br><b>Share</b>: %{percent}<extra></extra>'
     )
     
     fig.update_layout(
-        title="Sales Contribution by Region",
-        legend_title="Region"
+        title=f"Sales Contribution by {region_col.replace('_', ' ')}",
+        legend_title=region_col
     )
     
     return apply_layout_theme(fig)
 
-def plot_price_vs_volume(df):
+def plot_price_vs_volume(df, category_col='Product_Category'):
     """
     Plots a scatter plot of Price vs. Units Sold, sized by Revenue.
     """
+    if category_col not in df.columns:
+        other_cols = [c for c in df.columns if c not in ['Date', 'Sales_Revenue', 'Units_Sold', 'Price_Per_Unit', 'Discount', 'Year', 'Month', 'Quarter', 'DayOfWeek', 'IsWeekend', 'MonthName', 'DayOfYear']]
+        category_col = other_cols[0] if len(other_cols) > 0 else None
+        
     # Sample a subset to keep performance smooth if data is massive
     sampled_df = df.sample(min(2000, len(df)), random_state=42) if len(df) > 2000 else df
+    
+    hover_cols = [c for c in ['Product', 'Region', 'Discount'] if c in df.columns]
     
     fig = px.scatter(
         sampled_df,
         x="Price_Per_Unit",
         y="Units_Sold",
-        color="Product_Category",
+        color=category_col if category_col else None,
         size="Sales_Revenue",
-        hover_data=["Product", "Region", "Discount"],
+        hover_data=hover_cols,
         color_discrete_sequence=[COLORS['primary'], COLORS['secondary'], COLORS['accent'], COLORS['contrast']],
         title="Price Elasticity (Price vs. Quantity Sold)"
     )
@@ -165,6 +194,7 @@ def plot_price_vs_volume(df):
     )
     
     return apply_layout_theme(fig)
+
 
 def plot_forecast(historical_df, forecast_df, model_name):
     """

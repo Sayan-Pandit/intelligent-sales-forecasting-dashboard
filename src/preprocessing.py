@@ -133,3 +133,137 @@ def aggregate_data(df, frequency='ME'):
     }).reset_index()
     
     return df_agg
+
+def suggest_mappings(df):
+    """
+    Attempts to identify which columns contain the date and sales values.
+    Returns: (date_column, sales_column)
+    """
+    date_col = None
+    sales_col = None
+    
+    # Lowercase names for comparison
+    cols = list(df.columns)
+    cols_low = [c.lower() for c in cols]
+    
+    # 1. Try to find a date column
+    # Check by datetime datatype first
+    for i, col in enumerate(cols):
+        if pd.api.types.is_datetime64_any_dtype(df[col]):
+            date_col = col
+            break
+            
+    # Check by column name keywords if datatype check didn't work
+    if date_col is None:
+        date_keywords = ['date', 'time', 'timestamp', 'ds', 'period', 'year', 'day', 'month']
+        for kw in date_keywords:
+            for i, col_low in enumerate(cols_low):
+                if kw in col_low:
+                    date_col = cols[i]
+                    break
+            if date_col is not None:
+                break
+                
+    # Fallback to the first column if still not found
+    if date_col is None and len(cols) > 0:
+        date_col = cols[0]
+        
+    # 2. Try to find a sales column
+    # Check by keywords
+    sales_keywords = ['revenue', 'sales', 'sales_revenue', 'amount', 'total', 'turnover', 'sales_amount', 'y']
+    for kw in sales_keywords:
+        for i, col_low in enumerate(cols_low):
+            if kw == col_low:  # Exact match first
+                sales_col = cols[i]
+                break
+        if sales_col is not None:
+            break
+            
+    if sales_col is None:
+        for kw in sales_keywords:
+            for i, col_low in enumerate(cols_low):
+                if kw in col_low:  # Partial match
+                    sales_col = cols[i]
+                    break
+            if sales_col is not None:
+                break
+                
+    # Check by numerical datatype as fallback
+    if sales_col is None:
+        for col in cols:
+            if col != date_col and pd.api.types.is_numeric_dtype(df[col]):
+                sales_col = col
+                break
+                
+    # Fallback to the second column or the date column if nothing else
+    if sales_col is None and len(cols) > 1:
+        sales_col = cols[1] if cols[1] != date_col else cols[0]
+    elif sales_col is None and len(cols) > 0:
+        sales_col = cols[0]
+        
+    return date_col, sales_col
+
+def map_and_clean_data(df, date_col, sales_col):
+    """
+    Standardizes column names for any dataset using the user's selected date and sales columns.
+    Enforces types and handles missing values.
+    """
+    df = df.copy()
+    
+    # Safety checks
+    if date_col not in df.columns or sales_col not in df.columns:
+        raise ValueError("Selected columns do not exist in the dataset.")
+        
+    # Rename mapped columns
+    rename_dict = {date_col: 'Date', sales_col: 'Sales_Revenue'}
+    df = df.rename(columns=rename_dict)
+    
+    # Parse Date
+    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+    df = df.dropna(subset=['Date'])
+    
+    # Parse Sales
+    df['Sales_Revenue'] = pd.to_numeric(df['Sales_Revenue'], errors='coerce').fillna(0.0)
+    
+    # Standardize/Fill other optional columns
+    # We look for a column similar to Units_Sold or Price_Per_Unit
+    cols_low = [c.lower() for c in df.columns]
+    
+    # Units Sold
+    units_col = None
+    for i, col_low in enumerate(cols_low):
+        if 'units' in col_low or 'qty' in col_low or 'quantity' in col_low:
+            units_col = df.columns[i]
+            break
+    if units_col and units_col not in ['Date', 'Sales_Revenue']:
+        df['Units_Sold'] = pd.to_numeric(df[units_col], errors='coerce').fillna(1)
+    else:
+        df['Units_Sold'] = 1  # Default to 1 if not present
+        
+    # Discount
+    discount_col = None
+    for i, col_low in enumerate(cols_low):
+        if 'discount' in col_low:
+            discount_col = df.columns[i]
+            break
+    if discount_col and discount_col not in ['Date', 'Sales_Revenue', 'Units_Sold']:
+        df['Discount'] = pd.to_numeric(df[discount_col], errors='coerce').fillna(0.0)
+        # Normalize if expressed as percentage (e.g. > 1.0)
+        if df['Discount'].max() > 1.0:
+            df['Discount'] = df['Discount'] / 100.0
+    else:
+        df['Discount'] = 0.0
+        
+    # Price Per Unit
+    price_col = None
+    for i, col_low in enumerate(cols_low):
+        if 'price' in col_low or 'rate' in col_low:
+            price_col = df.columns[i]
+            break
+    if price_col and price_col not in ['Date', 'Sales_Revenue', 'Units_Sold', 'Discount']:
+        df['Price_Per_Unit'] = pd.to_numeric(df[price_col], errors='coerce').fillna(df['Sales_Revenue'])
+    else:
+        df['Price_Per_Unit'] = df['Sales_Revenue']
+        
+    return df
+
