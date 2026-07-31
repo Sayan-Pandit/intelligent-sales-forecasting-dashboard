@@ -33,3 +33,7 @@ models/*.onnx
 *.temp
 tmp/
 temp/
+
+# Data files
+data/*.csv
+
