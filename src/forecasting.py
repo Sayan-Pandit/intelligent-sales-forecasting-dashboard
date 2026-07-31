@@ -176,10 +176,19 @@ def train_regression_model(df_agg, horizon_months=6, model_type='rf'):
     elif model_type == 'mlp':
         from sklearn.preprocessing import StandardScaler
         from sklearn.pipeline import Pipeline
-        model = Pipeline([
+        from sklearn.compose import TransformedTargetRegressor
+        
+        # Build scaled pipeline for input features X
+        mlp_pipeline = Pipeline([
             ('scaler', StandardScaler()),
-            ('mlp', MLPRegressor(hidden_layer_sizes=(64, 32), max_iter=1000, random_state=42, early_stopping=True))
+            ('mlp', MLPRegressor(hidden_layer_sizes=(64, 32), max_iter=2000, random_state=42, early_stopping=True, learning_rate_init=0.01))
         ])
+        
+        # Wrap in TransformedTargetRegressor to standard scale the target variable y
+        model = TransformedTargetRegressor(
+            regressor=mlp_pipeline,
+            transformer=StandardScaler()
+        )
         model_name = "MLP Neural Network"
     else:
         model = XGBRegressor(n_estimators=100, learning_rate=0.05, random_state=42)
