@@ -310,17 +310,17 @@ if df_raw is not None:
                 
                 # Main historical trend line chart
                 fig_trend = plot_sales_trend(df_filtered)
-                st.plotly_chart(fig_trend, use_container_width=True)
+                st.plotly_chart(fig_trend, use_container_width=True, key="executive_trend_chart")
                 
                 col_left, col_right = st.columns(2)
                 with col_left:
                     # Regional sales donut
                     fig_region = plot_regional_analysis(df_filtered)
-                    st.plotly_chart(fig_region, use_container_width=True)
+                    st.plotly_chart(fig_region, use_container_width=True, key="executive_regional_chart")
                 with col_right:
                     # Product category bar chart
                     fig_product = plot_product_analysis(df_filtered)
-                    st.plotly_chart(fig_product, use_container_width=True)
+                    st.plotly_chart(fig_product, use_container_width=True, key="executive_product_chart")
             
             # --- TAB 2: Deep-Dive Insights ---
             with tabs[1]:
@@ -341,11 +341,11 @@ if df_raw is not None:
                 with col_dleft:
                     # Category or product specific bar chart
                     fig_prod_drill = plot_product_analysis(df_filtered, category=category_drilldown)
-                    st.plotly_chart(fig_prod_drill, use_container_width=True)
+                    st.plotly_chart(fig_prod_drill, use_container_width=True, key="drilldown_product_chart")
                 with col_dright:
                     # Elasticity scatter plot
                     fig_elasticity = plot_price_vs_volume(df_filtered)
-                    st.plotly_chart(fig_elasticity, use_container_width=True)
+                    st.plotly_chart(fig_elasticity, use_container_width=True, key="drilldown_elasticity_chart")
                     
                 # Extra statistics table
                 st.subheader("Performance Summary by Category")
@@ -427,7 +427,7 @@ if df_raw is not None:
                                     
                                 # Plot prediction
                                 fig_forecast = plot_forecast(df_monthly, forecast_df, name)
-                                st.plotly_chart(fig_forecast, use_container_width=True)
+                                st.plotly_chart(fig_forecast, use_container_width=True, key="forecasting_prediction_chart")
                                 
                                 # Show future predictions in a table
                                 last_hist_date = df_monthly['Date'].max()
