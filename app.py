@@ -27,10 +27,10 @@ st.set_page_config(
 # Premium UI CSS styling
 custom_css = """
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
     
-    html, body, [class*="css"] {
-        font-family: 'Outfit', sans-serif;
+    html, body, [class*="css"], [class*="st-"] {
+        font-family: 'Outfit', sans-serif !important;
     }
     
     .stApp {
@@ -38,95 +38,165 @@ custom_css = """
         color: #E0E0E6;
     }
     
-    /* Headers styling */
-    h1, h2, h3 {
-        font-weight: 600 !important;
-        color: #FFFFFF !important;
-        font-family: 'Outfit', sans-serif;
+    /* Hide default Streamlit decoration headers */
+    header, footer, [data-testid="stHeader"] {
+        visibility: hidden !important;
+        height: 0px !important;
     }
     
-    /* Dashboard metric cards */
+    /* Sidebar Styling */
+    section[data-testid="stSidebar"] {
+        background-color: #121225 !important;
+        border-right: 1px solid #2B2B3D !important;
+    }
+    
+    section[data-testid="stSidebar"] div[data-testid="stSidebarUserContent"] {
+        padding-top: 40px !important;
+    }
+    
+    section[data-testid="stSidebar"] p, section[data-testid="stSidebar"] label, section[data-testid="stSidebar"] span {
+        color: #E0E0E6 !important;
+        font-weight: 500 !important;
+        font-family: 'Outfit', sans-serif !important;
+    }
+    
+    /* Multi-select styling */
+    .stMultiSelect [data-baseweb="tag"] {
+        background: linear-gradient(135deg, #636EFA 0%, #AB63FA 100%) !important;
+        color: #FFFFFF !important;
+        border-radius: 6px !important;
+        font-weight: 500 !important;
+        border: none !important;
+        font-family: 'Outfit', sans-serif !important;
+    }
+    
+    .stMultiSelect [data-baseweb="tag"] span {
+        color: #FFFFFF !important;
+    }
+    
+    /* Dropdowns and select inputs styling */
+    div[data-baseweb="select"] > div {
+        background-color: #1E1E2E !important;
+        border-color: #2B2B3D !important;
+        color: #E0E0E6 !important;
+        border-radius: 8px !important;
+        font-family: 'Outfit', sans-serif !important;
+    }
+    
+    /* Glassmorphic KPI cards */
     .metric-card {
-        background: linear-gradient(135deg, #1E1E2E 0%, #151525 100%);
-        border: 1px solid #2B2B3D;
-        border-radius: 12px;
+        background: rgba(30, 30, 46, 0.45);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
         padding: 24px;
         text-align: left;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-        transition: transform 0.3s ease, border-color 0.3s ease;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        margin-bottom: 16px;
     }
+    
     .metric-card:hover {
-        transform: translateY(-5px);
-        border-color: #636EFA;
+        transform: translateY(-4px);
+        border-color: rgba(99, 110, 250, 0.6);
+        box-shadow: 0 12px 40px 0 rgba(99, 110, 250, 0.25);
     }
+    
     .metric-title {
         color: #8C8C9A;
-        font-size: 14px;
+        font-size: 13px;
         text-transform: uppercase;
-        letter-spacing: 1.5px;
-        font-weight: 400;
+        letter-spacing: 1.8px;
+        font-weight: 600;
         margin-bottom: 8px;
     }
+    
     .metric-value {
-        color: #FFFFFF;
-        font-size: 32px;
+        background: linear-gradient(90deg, #FFFFFF 0%, #D0D0E0 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-size: 34px;
         font-weight: 800;
-        margin-bottom: 4px;
+        margin-bottom: 6px;
+        font-family: 'Outfit', sans-serif !important;
     }
+    
     .metric-delta {
         font-size: 14px;
         font-weight: 600;
+        font-family: 'Outfit', sans-serif !important;
     }
+    
     .metric-delta.positive {
         color: #00CC96;
     }
+    
     .metric-delta.negative {
         color: #EF553B;
     }
     
-    /* Custom tabs styling */
+    /* Tabs Styling */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 8px;
-        background-color: #151525;
-        padding: 6px;
-        border-radius: 8px;
+        gap: 12px;
+        background-color: rgba(30, 30, 46, 0.4);
+        padding: 8px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
     }
+    
     .stTabs [data-baseweb="tab"] {
-        height: 45px;
+        height: 48px;
         white-space: pre-wrap;
         background-color: transparent;
-        border-radius: 6px;
+        border-radius: 8px;
         color: #8C8C9A;
         font-weight: 600;
         font-size: 15px;
         border: none;
-        padding: 0px 20px;
-        transition: background-color 0.3s ease, color 0.3s ease;
-    }
-    .stTabs [data-baseweb="tab"]:hover {
-        color: #FFFFFF;
-    }
-    .stTabs [aria-selected="true"] {
-        background-color: #636EFA !important;
-        color: #FFFFFF !important;
+        padding: 0px 24px;
+        transition: all 0.3s ease;
+        font-family: 'Outfit', sans-serif !important;
     }
     
-    /* Styled buttons */
-    div.stButton > button:first-child {
-        background: linear-gradient(135deg, #636EFA 0%, #AB63FA 100%);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        padding: 10px 24px;
-        font-weight: 600;
-        font-size: 16px;
-        box-shadow: 0 4px 15px rgba(99, 110, 250, 0.4);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    .stTabs [data-baseweb="tab"]:hover {
+        color: #FFFFFF;
+        background-color: rgba(255, 255, 255, 0.03);
     }
+    
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(135deg, #636EFA 0%, #AB63FA 100%) !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 4px 15px rgba(99, 110, 250, 0.3) !important;
+    }
+    
+    /* Premium form styling */
+    div[data-testid="stForm"] {
+        background: rgba(30, 30, 46, 0.35);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15);
+    }
+    
+    /* Buttons styling */
+    div.stButton > button:first-child {
+        background: linear-gradient(135deg, #636EFA 0%, #AB63FA 100%) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 8px !important;
+        padding: 10px 24px !important;
+        font-weight: 600 !important;
+        font-size: 16px !important;
+        box-shadow: 0 4px 15px rgba(99, 110, 250, 0.4) !important;
+        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+        font-family: 'Outfit', sans-serif !important;
+    }
+    
     div.stButton > button:first-child:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(99, 110, 250, 0.6);
-        color: white;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(99, 110, 250, 0.6) !important;
+        color: white !important;
     }
 </style>
 """
@@ -136,10 +206,15 @@ st.markdown(custom_css, unsafe_allow_html=True)
 SAMPLE_DATA_PATH = "data/sample_sales_data.csv"
 generate_sample_data(SAMPLE_DATA_PATH)
 
-# Header Title
-st.title("📈 Intelligent Sales Forecasting Dashboard")
-st.markdown("Predict future sales using historical business data and visualize trends for management.")
-st.markdown("---")
+# Header Title with Gradient Neon Line
+header_html = """
+<div style="margin-bottom: 32px; padding-top: 10px;">
+    <h1 style="background: linear-gradient(90deg, #636EFA 0%, #AB63FA 50%, #00CC96 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 42px; font-weight: 800; margin-bottom: 4px; font-family: 'Outfit', sans-serif; display: inline-block;">📈 Intelligent Sales Forecasting Dashboard</h1>
+    <p style="color: #8C8C9A; font-size: 16px; font-family: 'Outfit', sans-serif; margin-top: 6px;">Predict future sales using historical business data and visualize trends for management.</p>
+    <div style="height: 2px; background: linear-gradient(90deg, rgba(99,110,250,0.8) 0%, rgba(171,99,250,0.5) 50%, rgba(255,255,255,0) 100%); margin-top: 16px; margin-bottom: 16px;"></div>
+</div>
+"""
+st.markdown(header_html, unsafe_allow_html=True)
 
 # Sidebar - Configuration and Data Input
 st.sidebar.markdown("## 📊 Configuration")
