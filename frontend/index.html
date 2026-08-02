@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelligent Sales Forecasting Dashboard</title>
+    <!-- Outfit Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <!-- Plotly JS for premium interactive charts -->
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <span class="brand-icon">📈</span> Sales Forecast AI
+            </div>
+
+            <nav class="sidebar-menu">
+                <div class="menu-item active" data-tab="dashboard">
+                    <span class="menu-icon">📊</span> Dashboard
+                </div>
+                <div class="menu-item" data-tab="analytics">
+                    <span class="menu-icon">🔍</span> Analytics
+                </div>
+                <div class="menu-item" data-tab="forecasting">
+                    <span class="menu-icon">🔮</span> Forecasting
+                </div>
+                <div class="menu-item" data-tab="products">
+                    <span class="menu-icon">📦</span> Products
+                </div>
+                <div class="menu-item" data-tab="customers">
+                    <span class="menu-icon">👤</span> Customers
+                </div>
+                <div class="menu-item" data-tab="reports">
+                    <span class="menu-icon">📋</span> Reports
+                </div>
+                <div class="menu-item" data-tab="alerts">
+                    <span class="menu-icon">🔔</span> Alerts
+                </div>
+                <div class="menu-item" data-tab="settings">
+                    <span class="menu-icon">⚙️</span> Settings
+                </div>
+            </nav>
+
+            <div class="sidebar-divider"></div>
+
+            <!-- DATA SOURCE PANEL -->
+            <div class="sidebar-filters" style="margin-bottom:15px;">
+                <span class="filter-header">Data Source</span>
+                <div class="filter-group">
+                    <select id="data-source-select">
+                        <option value="sample">Use Sample Sales Dataset</option>
+                        <option value="upload">Upload Custom Sales CSV/Excel</option>
+                    </select>
+                </div>
+                <div class="filter-group" id="upload-container" style="display:none;">
+                    <input type="file" id="file-uploader" accept=".csv,.xlsx,.xls" style="padding: 4px 6px;">
+                </div>
+                <!-- Dynamic column mappings overlay if custom file loaded -->
+                <div class="filter-group" id="mapping-container"
+                    style="display:none; background:rgba(255,255,255,0.03); padding:8px; border-radius:8px; border:1px solid rgba(255,255,255,0.05); margin-top:8px;">
+                    <label style="font-size:10.5px; font-weight:600; text-transform:uppercase; color:#AB63FA;">Column
+                        Mappings</label>
+                    <div style="margin-top:4px;">
+                        <label style="font-size:10px; color:#8C8C9A;">Date Column</label>
+                        <select id="mapping-date" style="padding:4px; font-size:11px; margin-top:2px;"></select>
+                    </div>
+                    <div style="margin-top:4px;">
+                        <label style="font-size:10px; color:#8C8C9A;">Revenue Column</label>
+                        <select id="mapping-sales" style="padding:4px; font-size:11px; margin-top:2px;"></select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-divider"></div>
+
+            <!-- FILTERS PANEL -->
+            <div class="sidebar-filters">
+                <span class="filter-header">Filters</span>
+
+                <div class="filter-group">
+                    <label for="filter-date-range">Date Range</label>
+                    <div class="date-input-container">
+                        <input type="date" id="filter-start-date">
+                        <input type="date" id="filter-end-date">
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <label for="filter-region">Region</label>
+                    <select id="filter-region">
+                        <option value="All Regions">All Regions</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="filter-category">Product Category</label>
+                    <select id="filter-category">
+                        <option value="All Categories">All Categories</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="filter-rep">Sales Rep</label>
+                    <select id="filter-rep">
+                        <option value="All Representatives">All Representatives</option>
+                        <option value="John Manager">John Manager</option>
+                        <option value="Jane Director">Jane Director</option>
+                    </select>
+                </div>
+
+                <button id="btn-reset-filters" class="reset-btn">🔄 Reset Filters</button>
+            </div>
+
+            <!-- AI FORECAST CARD -->
+            <div class="sidebar-fc-card">
+                <span class="fc-card-label">AI Forecast</span>
+                <span class="fc-card-sublabel">Next 3 Months Prediction</span>
+                <div class="fc-card-value" id="sb-fc-value">$3.42M</div>
+                <div class="fc-card-growth" id="sb-fc-growth">▲ +12.8% <span
+                        style="color:#8C8C9A; font-weight:normal;">from last 3m</span></div>
+                <div id="sb-sparkline-chart" class="sparkline-container"></div>
+            </div>
+
+            <!-- USER PROFILE -->
+            <div class="sidebar-profile">
+                <div class="profile-avatar">JM</div>
+                <div class="profile-details">
+                    <span class="profile-name">John Manager</span>
+                    <span class="profile-role">Admin</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN AREA -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="main-header">
+                <div>
+                    <h1 class="header-title" id="page-title">Dashboard</h1>
+                    <p class="header-subtitle">Predict future sales using historical business data and AI-powered
+                        insights</p>
+                </div>
+                <div class="header-controls">
+                    <span class="control-date" id="display-date-range">Jan 1, 2023 - Dec 31, 2023</span>
+                    <span class="control-divider">|</span>
+                    <span class="control-icon" title="Toggle Light/Dark Theme">🌙</span>
+                    <span class="control-icon alert-bell" title="Notifications">
+                        🔔<span class="notification-badge">3</span>
+                    </span>
+                    <span class="control-icon" title="Settings">⚙️</span>
+                </div>
+            </header>
+
+            <!-- TAB PANELS -->
+            <section class="tab-panel active" id="panel-dashboard">
+                <!-- Row 1: KPI Grid -->
+                <div class="kpi-grid">
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-title">Total Revenue</span>
+                            <div class="metric-icon-circle rev-color">$</div>
+                        </div>
+                        <div class="metric-value" id="kpi-revenue">$2.73M</div>
+                        <div class="metric-delta positive" id="kpi-revenue-growth">▲ +15.2% vs last year</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-title">Total Profit</span>
+                            <div class="metric-icon-circle prof-color">📈</div>
+                        </div>
+                        <div class="metric-value" id="kpi-profit">$582.64K</div>
+                        <div class="metric-delta positive" id="kpi-profit-growth">▲ +12.7% vs last year</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-title">Units Sold</span>
+                            <div class="metric-icon-circle units-color">🛒</div>
+                        </div>
+                        <div class="metric-value" id="kpi-units">25,355</div>
+                        <div class="metric-delta positive" id="kpi-units-growth">▲ +10.3% vs last year</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-title">Avg. Order Value</span>
+                            <div class="metric-icon-circle aov-color">🛍️</div>
+                        </div>
+                        <div class="metric-value" id="kpi-aov">$107.54</div>
+                        <div class="metric-delta positive" id="kpi-aov-growth">▲ +1.6% vs last year</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-title">Profit Margin</span>
+                            <div class="metric-icon-circle margin-color">📊</div>
+                        </div>
+                        <div class="metric-value" id="kpi-margin">21.34%</div>
+                        <div class="metric-delta positive" id="kpi-margin-growth">▲ +1.8% vs last year</div>
+                    </div>
+                </div>
+
+                <!-- Row 2: Charts Row -->
+                <div class="grid-row-3">
+                    <div class="dashboard-card col-span-5">
+                        <div id="chart-sales-trend" class="plotly-chart"></div>
+                        <div class="trend-footer-metrics">
+                            <div class="footer-metric-item">
+                                <span class="fm-label">This Year Revenue</span>
+                                <span class="fm-value" id="fm-revenue">$2.73M</span>
+                            </div>
+                            <div class="footer-metric-item">
+                                <span class="fm-label">Forecast Next 3 Months</span>
+                                <span class="fm-value purple-text" id="fm-fc-3m">$847.32K</span>
+                            </div>
+                            <div class="footer-metric-item">
+                                <span class="fm-label">Forecast Growth</span>
+                                <span class="fm-value green-text" id="fm-fc-growth">▲ +12.8%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card col-span-4">
+                        <div id="chart-regional-map" class="plotly-chart"></div>
+                    </div>
+
+                    <div class="dashboard-card col-span-3">
+                        <div class="card-header-flex">
+                            <span class="card-title">Top Products</span>
+                            <span class="card-badge">By Revenue</span>
+                        </div>
+                        <div class="product-list-container" id="top-products-list">
+                            <!-- Populated dynamically -->
+                        </div>
+                        <button class="view-all-btn" id="btn-view-products">View All Products</button>
+                    </div>
+                </div>
+
+                <!-- Row 3: Insights and Category Breakdown -->
+                <div class="grid-row-3">
+                    <div class="dashboard-card col-span-4">
+                        <div class="card-header-flex">
+                            <span class="card-title">AI Insights</span>
+                            <span class="card-badge">AI Assistant</span>
+                        </div>
+                        <div class="insights-container" id="ai-insights-list">
+                            <!-- Populated dynamically -->
+                        </div>
+                        <button class="view-all-btn">View All Insights</button>
+                    </div>
+
+                    <div class="dashboard-card col-span-4">
+                        <div id="chart-category-donut" class="plotly-chart"></div>
+                    </div>
+
+                    <div class="dashboard-card col-span-4">
+                        <div class="card-header-flex">
+                            <span class="card-title">Model Performance Comparison</span>
+                            <span class="card-badge">Accuracy</span>
+                        </div>
+                        <div class="table-container">
+                            <table class="premium-table" id="model-comparison-table">
+                                <thead>
+                                    <tr>
+                                        <th>Model</th>
+                                        <th>MAE</th>
+                                        <th>RMSE</th>
+                                        <th>R² Score</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <button class="view-all-btn" id="btn-view-models">View Model Details</button>
+                    </div>
+                </div>
+
+                <!-- Row 4: Simulator & Data Summary -->
+                <div class="grid-row-3">
+                    <div class="dashboard-card col-span-4">
+                        <div class="card-header-flex">
+                            <span class="card-title">Recent Alerts</span>
+                            <span class="warn-badge cursor-pointer">View All</span>
+                        </div>
+                        <div class="alerts-container">
+                            <div class="alert-item error-border">
+                                <div class="alert-content">
+                                    <span class="alert-desc">Sales in East region dropped by 12%</span>
+                                    <span class="alert-sub">Compared to last month</span>
+                                </div>
+                                <span class="alert-time text-error">2h ago</span>
+                            </div>
+                            <div class="alert-item warning-border">
+                                <div class="alert-content">
+                                    <span class="alert-desc">High Price Elasticity: Laptop Pro</span>
+                                    <span class="alert-sub">Consider a 5% discount</span>
+                                </div>
+                                <span class="alert-time text-warning">4h ago</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card col-span-5">
+                        <span class="card-title">Forecast Simulator</span>
+                        <div class="simulator-controls">
+                            <div class="sim-slider-group">
+                                <label for="sim-discount">Discount (%): <span id="val-sim-discount">15%</span></label>
+                                <input type="range" id="sim-discount" min="0" max="40" value="15">
+                            </div>
+                            <div class="sim-slider-group">
+                                <label for="sim-marketing">Marketing Spend ($): <span
+                                        id="val-sim-marketing">$50K</span></label>
+                                <input type="range" id="sim-marketing" min="10" max="200" value="50" step="10">
+                            </div>
+                            <div class="sim-slider-group">
+                                <label for="sim-price">Price Change (%): <span id="val-sim-price">5%</span></label>
+                                <input type="range" id="sim-price" min="-20" max="20" value="5">
+                            </div>
+                        </div>
+                        <div class="sim-result-box">
+                            <span class="sim-result-label">Simulated Monthly Sales</span>
+                            <span class="sim-result-value" id="sim-predicted-sales">$318.6K</span>
+                            <span class="sim-result-change text-success" id="sim-predicted-change">▲ +9.4% change</span>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card col-span-3">
+                        <span class="card-title">Data Summary</span>
+                        <div class="summary-details">
+                            <div class="summary-row">
+                                <span class="summary-label">Total Orders</span>
+                                <span class="summary-value" id="summary-orders">12,845</span>
+                            </div>
+                            <div class="summary-row">
+                                <span class="summary-label">Total Customers</span>
+                                <span class="summary-value" id="summary-customers">8,347</span>
+                            </div>
+                            <div class="summary-row">
+                                <span class="summary-label">Data Quality</span>
+                                <span class="summary-value text-success" id="summary-quality">96.3%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="tab-panel" id="panel-forecasting">
+                <div class="dashboard-card">
+                    <h2>🔮 Machine Learning Sales Forecasting</h2>
+                    <p style="color:#8C8C9A; margin-bottom: 20px;">Configure predictions and compare algorithms
+                        recursively.</p>
+
+                    <div class="forecasting-form">
+                        <div class="form-group">
+                            <label for="fc-algorithm">Forecasting Algorithm</label>
+                            <select id="fc-algorithm">
+                                <option value="Prophet / Time Series">Prophet / Time Series</option>
+                                <option value="Random Forest Regressor">Random Forest Regressor</option>
+                                <option value="XGBoost Regressor">XGBoost Regressor</option>
+                                <option value="MLP Neural Network">MLP Neural Network</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="fc-horizon">Prediction Horizon (Months)</label>
+                            <input type="range" id="fc-horizon" min="1" max="12" value="6">
+                            <span id="fc-horizon-val" style="margin-left: 10px; font-weight:600;">6 Months</span>
+                        </div>
+                        <button class="btn-primary" id="btn-run-forecast" style="margin-top: 15px;">Run
+                            Predictions</button>
+                    </div>
+
+                    <div id="fc-loading" class="loading-spinner" style="display:none; margin-top:20px;">
+                        Training model recursively... Please wait.
+                    </div>
+
+                    <div id="fc-results-container" style="display:none; margin-top: 30px;">
+                        <div id="chart-fc-results" class="plotly-chart" style="height: 400px; margin-bottom: 20px;">
+                        </div>
+
+                        <div class="kpi-grid" id="fc-metrics-grid" style="margin-bottom: 20px; display: none;">
+                            <div class="metric-card">
+                                <span class="metric-title">Mean Absolute Error (MAE)</span>
+                                <div class="metric-value" id="fc-metric-mae">$0.00</div>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-title">Root Mean Squared Error (RMSE)</span>
+                                <div class="metric-value" id="fc-metric-rmse">$0.00</div>
+                            </div>
+                            <div class="metric-card">
+                                <span class="metric-title">R² Score</span>
+                                <div class="metric-value" id="fc-metric-r2">0.0000</div>
+                            </div>
+                        </div>
+
+                        <div class="card-header-flex">
+                            <h3>Forecast Data Summary</h3>
+                            <button class="btn-primary" id="btn-download-forecast">📥 Download Forecast CSV</button>
+                        </div>
+
+                        <div class="table-container" style="margin-top: 15px;">
+                            <table class="premium-table" id="forecast-summary-table">
+                                <thead>
+                                    <tr>
+                                        <th>Forecasted Month</th>
+                                        <th>Predicted Sales ($)</th>
+                                        <th>Lower Bound ($)</th>
+                                        <th>Upper Bound ($)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="tab-panel" id="panel-analytics">
+                <div class="dashboard-card">
+                    <h2>🔍 Deep-Dive Interactive Analytics</h2>
+                    <p style="color:#8C8C9A;">View product-wise drilldowns and price elasticities.</p>
+                    <div style="margin-top:20px;">
+                        <p>Select a category or click elements to filter. Standard Plotly graphics load dynamically.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="tab-panel" id="panel-products">
+                <div class="dashboard-card">
+                    <h2>📦 Products Catalogue</h2>
+                    <p style="color:#8C8C9A; margin-bottom: 20px;">Full database listing of products mapped by revenue
+                        contribution.</p>
+                    <div class="table-container">
+                        <table class="premium-table" id="full-products-table">
+                            <thead>
+                                <tr>
+                                    <th>Product Name</th>
+                                    <th>Category</th>
+                                    <th>Units Sold</th>
+                                    <th>Avg List Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section class="tab-panel" id="panel-placeholder">
+                <div class="dashboard-card">
+                    <h2 id="placeholder-title">Section Title</h2>
+                    <p style="color:#8C8C9A;">This section is a placeholder. All analytics are reactive to the filters
+                        in the sidebar panel.</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

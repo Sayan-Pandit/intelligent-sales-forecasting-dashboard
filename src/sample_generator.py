@@ -22,28 +22,26 @@ def generate_sample_data(output_path="data/sample_sales_data.csv", start_date="2
     # Products catalog with categories and prices
     catalog = {
         "Electronics": {
-            "Laptop": 999.99,
-            "Smartphone": 699.99,
-            "Headphones": 149.99,
-            "Smartwatch": 249.99
+            "Laptop Pro": 1299.99,
+            "Smartphone X": 899.99,
+            "Tablet Air": 599.99
         },
-        "Furniture": {
-            "Office Chair": 199.99,
-            "Desk": 299.99,
-            "Dining Table": 499.99,
-            "Sofa": 799.99
+        "Accessories": {
+            "Wireless Earbuds": 199.99,
+            "Leather Case": 49.99,
+            "USB-C Hub": 79.99
         },
-        "Clothing": {
-            "Jeans": 59.99,
-            "T-shirt": 24.99,
-            "Hoodie": 49.99,
-            "Sneakers": 89.99
+        "Wearables": {
+            "Smart Watch": 299.99,
+            "Fitness Tracker": 99.99
         },
-        "Groceries": {
-            "Coffee Beans": 14.99,
-            "Organic Milk": 4.99,
-            "Olive Oil": 19.99,
-            "Chocolate": 5.99
+        "Home Appliances": {
+            "Coffee Maker": 149.99,
+            "Smart Bulb": 29.99
+        },
+        "Others": {
+            "Office Chair": 249.99,
+            "Water Bottle": 34.99
         }
     }
     
@@ -62,30 +60,30 @@ def generate_sample_data(output_path="data/sample_sales_data.csv", start_date="2
     n_products = len(product_list)
     
     # To generate realistic sales, we'll sample daily transactions
-    # We will generate between 50 and 150 transactions per day
     np.random.seed(42)
     
     records = []
     
     # Base multiplier for regions to introduce regional differences
     region_multipliers = {
-        "East": 1.2,
-        "West": 1.1,
-        "North": 0.9,
-        "South": 0.8
+        "East": 1.15,
+        "West": 1.25, # West is highest growth / highest sales
+        "North": 0.95,
+        "South": 0.85
     }
     
-    # Base multiplier for product categories to make some more popular
+    # Base multiplier for product categories to make some more popular (matching Electronics dominance)
     category_multipliers = {
-        "Electronics": 1.0,
-        "Groceries": 1.5, # Groceries sold more frequently
-        "Clothing": 1.2,
-        "Furniture": 0.6  # Furniture sold less frequently
+        "Electronics": 1.6,
+        "Accessories": 0.8,
+        "Wearables": 0.6,
+        "Home Appliances": 0.4,
+        "Others": 0.3
     }
     
     for date in dates:
         # Determine number of transactions for this day
-        # Weekend effect: more transactions on Fri, Sat, Sun
+        # Weekend effect
         day_of_week = date.dayofweek
         is_weekend = day_of_week in [4, 5, 6] # Friday, Saturday, Sunday
         
@@ -93,19 +91,20 @@ def generate_sample_data(output_path="data/sample_sales_data.csv", start_date="2
         month = date.month
         month_multiplier = 1.0
         if month in [11, 12]:
-            month_multiplier = 1.4  # Holiday shopping
+            month_multiplier = 1.35  # Holiday shopping
         elif month == 1:
             month_multiplier = 0.8  # Post-holiday dip
         elif month in [8, 9]:
             month_multiplier = 1.1  # Back to school
             
-        # Yearly growth trend (sales grow by ~10% each year)
+        # Yearly growth trend (sales grow by ~12% each year)
         year_multiplier = 1.0 + (date.year - 2023) * 0.12
         
-        # Calculate daily transaction count
-        base_tx = np.random.randint(40, 90)
+        # Adjust base transaction count to achieve ~$2.73M in 2023
+        # Average price is higher, so let's generate around 25-45 transactions per day
+        base_tx = np.random.randint(22, 38)
         if is_weekend:
-            base_tx = int(base_tx * 1.3)
+            base_tx = int(base_tx * 1.25)
         
         n_tx = int(base_tx * month_multiplier * year_multiplier)
         
@@ -119,24 +118,22 @@ def generate_sample_data(output_path="data/sample_sales_data.csv", start_date="2
             region = np.random.choice(regions)
             
             # Base quantity sold
-            if cat == "Groceries":
-                base_qty = np.random.randint(1, 6)
-            elif cat == "Clothing":
+            if cat in ["Accessories", "Others"]:
                 base_qty = np.random.randint(1, 4)
             elif cat == "Electronics":
+                # Electronics are expensive, so mostly 1, occasionally 2
+                base_qty = np.random.choice([1, 2], p=[0.85, 0.15])
+            else:
                 base_qty = np.random.randint(1, 3)
-            else: # Furniture
-                base_qty = 1
                 
             # Apply multipliers
             m_mult = region_multipliers[region] * category_multipliers[cat]
-            qty = max(1, int(round(base_qty * m_mult * (1.2 if is_weekend else 1.0))))
+            qty = max(1, int(round(base_qty * m_mult * (1.15 if is_weekend else 1.0))))
             
             # Apply discounts
-            # High price items are more likely to have discounts
-            discount_prob = 0.15 if cat in ["Groceries", "Clothing"] else 0.25
+            discount_prob = 0.20
             if np.random.random() < discount_prob:
-                discount = np.random.choice([0.05, 0.10, 0.15, 0.20, 0.25])
+                discount = np.random.choice([0.05, 0.10, 0.15, 0.20])
             else:
                 discount = 0.0
                 

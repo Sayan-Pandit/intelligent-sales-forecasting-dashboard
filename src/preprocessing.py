@@ -36,6 +36,33 @@ def load_data(file_input):
     return df
 
 
+def calculate_profit(df):
+    """
+    Calculates profit and profit margin dynamically based on product categories.
+    """
+    df = df.copy()
+    MARGINS = {
+        'Electronics': 0.2134,
+        'Accessories': 0.25,
+        'Wearables': 0.32,
+        'Home Appliances': 0.18,
+        'Others': 0.15
+    }
+    
+    category_col = None
+    for col in df.columns:
+        if col.lower().replace(' ', '_') == 'product_category':
+            category_col = col
+            break
+            
+    if category_col:
+        df['Profit_Margin'] = df[category_col].map(MARGINS).fillna(0.22)
+    else:
+        df['Profit_Margin'] = 0.2134
+        
+    df['Total_Profit'] = df['Sales_Revenue'] * df['Profit_Margin']
+    return df
+
 
 def clean_data(df):
     """
@@ -89,7 +116,7 @@ def clean_data(df):
         
     # Convert date
     if 'Date' in df.columns:
-        df['Date'] = pd.to_datetime(df['Date'])
+        df['Date'] = pd.to_datetime(df['Date'], utc=True, errors='coerce').dt.tz_localize(None)
     else:
         raise ValueError("Missing 'Date' column.")
         
@@ -101,6 +128,9 @@ def clean_data(df):
             
     # Drop rows with missing dates or invalid records
     df = df.dropna(subset=['Date'])
+    
+    # Calculate profit metrics
+    df = calculate_profit(df)
     
     return df
 
@@ -219,14 +249,13 @@ def map_and_clean_data(df, date_col, sales_col):
     df = df.rename(columns=rename_dict)
     
     # Parse Date
-    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+    df['Date'] = pd.to_datetime(df['Date'], utc=True, errors='coerce').dt.tz_localize(None)
     df = df.dropna(subset=['Date'])
     
     # Parse Sales
     df['Sales_Revenue'] = pd.to_numeric(df['Sales_Revenue'], errors='coerce').fillna(0.0)
     
     # Standardize/Fill other optional columns
-    # We look for a column similar to Units_Sold or Price_Per_Unit
     cols_low = [c.lower() for c in df.columns]
     
     # Units Sold
@@ -264,6 +293,57 @@ def map_and_clean_data(df, date_col, sales_col):
         df['Price_Per_Unit'] = pd.to_numeric(df[price_col], errors='coerce').fillna(df['Sales_Revenue'])
     else:
         df['Price_Per_Unit'] = df['Sales_Revenue']
+
+    # Region
+    region_col = None
+    for i, col_low in enumerate(cols_low):
+        if col_low in ['region', 'country', 'territory', 'zone', 'market', 'state']:
+            region_col = df.columns[i]
+            break
+    if not region_col:
+        for i, col_low in enumerate(cols_low):
+            if 'region' in col_low or 'country' in col_low or 'territory' in col_low:
+                region_col = df.columns[i]
+                break
+    if region_col and region_col not in ['Date', 'Sales_Revenue', 'Units_Sold', 'Discount', 'Price_Per_Unit']:
+        df['Region'] = df[region_col].astype(str).fillna('Global')
+    else:
+        df['Region'] = 'Global'
+
+    # Product_Category
+    cat_col = None
+    for i, col_low in enumerate(cols_low):
+        if col_low in ['product_category', 'category', 'class', 'department', 'dept']:
+            cat_col = df.columns[i]
+            break
+    if not cat_col:
+        for i, col_low in enumerate(cols_low):
+            if 'category' in col_low or 'dept' in col_low or 'class' in col_low:
+                cat_col = df.columns[i]
+                break
+    if cat_col and cat_col not in ['Date', 'Sales_Revenue', 'Units_Sold', 'Discount', 'Price_Per_Unit', 'Region']:
+        df['Product_Category'] = df[cat_col].astype(str).fillna('General')
+    else:
+        df['Product_Category'] = 'General'
+
+    # Product
+    prod_col = None
+    for i, col_low in enumerate(cols_low):
+        if col_low in ['product', 'item', 'sku', 'product_name']:
+            prod_col = df.columns[i]
+            break
+    if not prod_col:
+        for i, col_low in enumerate(cols_low):
+            if 'product' in col_low or 'item' in col_low or 'name' in col_low:
+                prod_col = df.columns[i]
+                break
+    if prod_col and prod_col not in ['Date', 'Sales_Revenue', 'Units_Sold', 'Discount', 'Price_Per_Unit', 'Region', 'Product_Category']:
+        df['Product'] = df[prod_col].astype(str).fillna('Standard Product')
+    else:
+        df['Product'] = 'Standard Product'
         
+    # Calculate profit metrics
+    df = calculate_profit(df)
+    
     return df
 
