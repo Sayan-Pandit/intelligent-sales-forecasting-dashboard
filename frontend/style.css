@@ -526,12 +526,17 @@ body {
     color: var(--text-secondary);
     border-radius: var(--radius-sm);
     transition: color 0.15s ease, background 0.15s ease;
+    /* Reset button defaults to render transparently */
+    background: none;
+    border: none;
+    padding: 0;
 }
 .control-icon:hover {
     color: var(--text-white);
     background: rgba(255,255,255,0.07);
 }
 .control-icon svg { width: 16px; height: 16px; }
+
 
 .alert-bell { position: relative; }
 
