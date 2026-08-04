@@ -484,6 +484,7 @@ function renderCategoryDonut(categories) {
         labels: labels,
         type: 'pie',
         hole: 0.6,
+        domain: { x: [0, 0.72] }, // constrain pie to left 72%
         marker: {
             colors: ['#636EFA', '#AB63FA', '#00CC96', '#FFA15A', '#19D3F3']
         },
@@ -499,21 +500,22 @@ function renderCategoryDonut(categories) {
         font: { color: '#A0A0B8', family: 'Outfit' },
         annotations: [{
             text: `<span style='font-size:10px;color:var(--text-secondary);'>Total</span><br><b style='font-size:14px;color:#FFFFFF;'>$${(total/1e6).toFixed(2)}M</b>`,
-            x: 0.5, y: 0.5,
+            x: 0.36, y: 0.5, // 0.36 is the exact center of [0, 0.72]
             showarrow: false
         }],
         legend: {
-            orientation: 'h',
-            yanchor: 'top', y: -0.05,
-            xanchor: 'center', x: 0.5,
+            orientation: 'v',
+            yanchor: 'middle', y: 0.5,
+            xanchor: 'left', x: 0.75, // place legend in the right 28% area
             font: { size: 10, color: '#A0A0B8' }
         },
-        margin: { l: 10, r: 10, t: 40, b: 40 },
+        margin: { l: 10, r: 10, t: 40, b: 10 },
         height: 280
     };
     
     Plotly.newPlot('chart-category-donut', [trace], layout, {displayModeBar: false});
 }
+
 
 
 // Render Model Comparison Table
