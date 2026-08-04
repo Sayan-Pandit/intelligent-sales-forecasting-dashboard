@@ -831,10 +831,11 @@ body {
     padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4);
     background: rgba(107, 116, 255, 0.04);
     border-left: 2px solid var(--color-primary);
-    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    border-radius: var(--radius-md);
     color: var(--text-primary);
     transition: background 0.15s ease;
 }
+
 .insight-item:hover { background: rgba(107, 116, 255, 0.08); }
 
 .insight-icon {
