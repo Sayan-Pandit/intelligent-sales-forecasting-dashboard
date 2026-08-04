@@ -275,6 +275,7 @@ body {
 
 /* ── Upload ─────────────────────────────────────────────────────── */
 .upload-zone {
+    display: block;
     border: 2px dashed rgba(255, 255, 255, 0.12);
     border-radius: var(--radius-md);
     padding: var(--space-4) var(--space-3);
@@ -283,6 +284,7 @@ body {
     transition: border-color 0.2s, background 0.2s;
     background: rgba(255, 255, 255, 0.02);
 }
+
 .upload-zone:hover {
     border-color: rgba(107, 116, 255, 0.4);
     background: rgba(107, 116, 255, 0.05);
