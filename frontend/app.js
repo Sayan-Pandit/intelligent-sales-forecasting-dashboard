@@ -308,28 +308,48 @@ async function loadDashboard() {
     }
 }
 
+// Helper to render positive/negative growth delta text and styles
+function renderGrowth(elementId, val, label = "vs last year") {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    const isNegative = val < 0;
+    const arrow = isNegative ? '▼' : '▲';
+    const sign = isNegative ? '-' : '+';
+    const absVal = Math.abs(val).toFixed(1);
+    
+    if (isNegative) {
+        el.classList.remove('positive');
+        el.classList.add('negative');
+    } else {
+        el.classList.remove('negative');
+        el.classList.add('positive');
+    }
+    el.innerHTML = `${arrow} ${sign}${absVal}% <span style='color:var(--text-muted); font-weight:400;'>${label}</span>`;
+}
+
 // Update KPI cards UI
 function updateKPIs(kpis) {
     document.getElementById('kpi-revenue').textContent = `$${(kpis.revenue / 1e6).toFixed(2)}M`;
-    document.getElementById('kpi-revenue-growth').innerHTML = `▲ +${kpis.revenue_growth.toFixed(1)}% <span style='color:var(--text-muted); font-weight:400;'>vs last year</span>`;
+    renderGrowth('kpi-revenue-growth', kpis.revenue_growth);
     
     document.getElementById('kpi-profit').textContent = `$${(kpis.profit / 1e3).toFixed(1)}K`;
-    document.getElementById('kpi-profit-growth').innerHTML = `▲ +${kpis.profit_growth.toFixed(1)}% <span style='color:var(--text-muted); font-weight:400;'>vs last year</span>`;
+    renderGrowth('kpi-profit-growth', kpis.profit_growth);
     
     document.getElementById('kpi-units').textContent = kpis.units.toLocaleString();
-    document.getElementById('kpi-units-growth').innerHTML = `▲ +${kpis.units_growth.toFixed(1)}% <span style='color:var(--text-muted); font-weight:400;'>vs last year</span>`;
+    renderGrowth('kpi-units-growth', kpis.units_growth);
     
     document.getElementById('kpi-aov').textContent = `$${kpis.aov.toFixed(2)}`;
-    document.getElementById('kpi-aov-growth').innerHTML = `▲ +${kpis.aov_growth.toFixed(1)}% <span style='color:var(--text-muted); font-weight:400;'>vs last year</span>`;
+    renderGrowth('kpi-aov-growth', kpis.aov_growth);
     
     document.getElementById('kpi-margin').textContent = `${kpis.margin.toFixed(2)}%`;
-    document.getElementById('kpi-margin-growth').innerHTML = `▲ +${kpis.margin_growth.toFixed(1)}% <span style='color:var(--text-muted); font-weight:400;'>vs last year</span>`;
+    renderGrowth('kpi-margin-growth', kpis.margin_growth);
 }
 
 // Update sidebar forecast
 function updateSidebarForecast(fc) {
     document.getElementById('sb-fc-value').textContent = `$${(fc.val / 1e6).toFixed(2)}M`;
-    document.getElementById('sb-fc-growth').innerHTML = `▲ +${fc.growth.toFixed(1)}% <span style="color:var(--text-muted); font-weight:400;">from last 3m</span>`;
+    renderGrowth('sb-fc-growth', fc.growth, "from last 3m");
+
     
     // Render sidebar sparkline (plotly style)
     const trace = {
