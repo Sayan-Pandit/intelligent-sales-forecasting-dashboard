@@ -148,100 +148,172 @@ def train_regression_model(df_agg, horizon_months=6, model_type='rf'):
       - metrics: dict containing MAE, RMSE, R2
       - model_name: str
     """
-    df_feats = build_regression_features(df_agg)
+    from sklearn.linear_model import LinearRegression
     
-    # Drop rows with NaNs from lags (we lose up to 12 rows)
+    # 1. Fit linear trend on the historical dataset
+    min_date = df_agg['Date'].min()
+    df_agg = df_agg.copy().sort_values('Date').reset_index(drop=True)
+    df_agg['Time_Idx'] = (df_agg['Date'] - min_date).dt.days
+    
+    # Split train/test for trend fitting
+    test_size_trend = min(6, int(len(df_agg) * 0.2))
+    if test_size_trend < 1:
+        test_size_trend = 1
+        
+    df_train_raw = df_agg.iloc[:-test_size_trend]
+    
+    # Fit trend on train raw (using raw values to avoid feature names warnings)
+    trend_model = LinearRegression()
+    trend_model.fit(df_train_raw[['Time_Idx']].values, df_train_raw['Sales_Revenue'].values)
+    
+    # Detrend train and test series (using train trend model to avoid data leakage)
+    df_agg_detrended = df_agg.copy()
+    df_agg_detrended['Sales_Revenue'] = df_agg['Sales_Revenue'] - trend_model.predict(df_agg[['Time_Idx']].values)
+    
+    # 2. Build regression features on the detrended series
+    df_feats = build_regression_features(df_agg_detrended)
     df_clean = df_feats.dropna().copy()
     
     if len(df_clean) < 6:
         raise ValueError("Not enough historical data to train regression models. Please aggregate daily or use Prophet.")
         
-    # Features & Target
-    feature_cols = [col for col in df_clean.columns if 'Lag' in col or 'Rolling' in col] + ['Month', 'Year']
+    # Feature columns (exclude Year, keep Month and lags/rolling of detrended sales)
+    feature_cols = [col for col in df_clean.columns if 'Lag' in col or 'Rolling' in col] + ['Month']
+    
     X = df_clean[feature_cols]
-    y = df_clean['Sales_Revenue']
+    y = df_clean['Sales_Revenue'] # Detrended target
     
-    # Train-test split (hold out last 6 months for evaluation if we have enough data)
-    test_size = min(6, int(len(df_clean) * 0.2))
-    if test_size < 1:
-        test_size = 1
+    # Train-test split based on df_clean (to align features and targets correctly)
+    test_size_ml = min(6, int(len(df_clean) * 0.2))
+    if test_size_ml < 1:
+        test_size_ml = 1
         
-    X_train, X_test = X.iloc[:-test_size], X.iloc[-test_size:]
-    y_train, y_test = y.iloc[:-test_size], y.iloc[-test_size:]
+    X_train, X_test = X.iloc[:-test_size_ml], X.iloc[-test_size_ml:]
+    y_train, y_test = y.iloc[:-test_size_ml], y.iloc[-test_size_ml:]
     
-    # Model selection
+    # Model selection with regularization
     if model_type == 'rf':
-        model = RandomForestRegressor(n_estimators=100, random_state=42)
+        model = RandomForestRegressor(
+            n_estimators=100,
+            max_depth=8,
+            min_samples_leaf=2,
+            random_state=42
+        )
         model_name = "Random Forest Regressor"
     elif model_type == 'mlp':
         from sklearn.preprocessing import StandardScaler
         from sklearn.pipeline import Pipeline
         from sklearn.compose import TransformedTargetRegressor
         
-        # Build scaled pipeline for input features X
+        # Disable early stopping if dataset is too small to prevent scikit-learn training error
+        use_early_stopping = len(X_train) >= 20
+        
         mlp_pipeline = Pipeline([
             ('scaler', StandardScaler()),
-            ('mlp', MLPRegressor(hidden_layer_sizes=(64, 32), max_iter=2000, random_state=42, early_stopping=True, learning_rate_init=0.01))
+            ('mlp', MLPRegressor(
+                hidden_layer_sizes=(32, 16),
+                max_iter=3000,
+                random_state=42,
+                early_stopping=use_early_stopping,
+                n_iter_no_change=10,
+                learning_rate_init=0.01
+            ))
         ])
         
-        # Wrap in TransformedTargetRegressor to standard scale the target variable y
+        # Wrap in TransformedTargetRegressor to standard scale the target variable y (which is already detrended)
         model = TransformedTargetRegressor(
             regressor=mlp_pipeline,
             transformer=StandardScaler()
         )
         model_name = "MLP Neural Network"
     else:
-        model = XGBRegressor(n_estimators=100, learning_rate=0.05, random_state=42)
+        model = XGBRegressor(
+            n_estimators=100,
+            learning_rate=0.05,
+            max_depth=4,
+            reg_alpha=0.1,
+            reg_lambda=1.0,
+            subsample=0.8,
+            colsample_bytree=0.8,
+            random_state=42
+        )
         model_name = "XGBoost Regressor"
-
         
     model.fit(X_train, y_train)
     
-    # Evaluate model
-    test_preds = model.predict(X_test)
+    # Evaluate model: predictions must be on the original scale (add trend back)
+    test_preds_detrended = model.predict(X_test)
+    test_time_idx = df_agg.iloc[-test_size_ml:][['Time_Idx']]
+    test_preds_actual = test_preds_detrended + trend_model.predict(test_time_idx.values)
+    y_test_actual = df_agg.iloc[-test_size_ml:]['Sales_Revenue'].values
+    
     metrics = {
-        'MAE': mean_absolute_error(y_test, test_preds),
-        'RMSE': np.sqrt(mean_squared_error(y_test, test_preds)),
-        'R2': r2_score(y_test, test_preds)
+        'MAE': mean_absolute_error(y_test_actual, test_preds_actual),
+        'RMSE': np.sqrt(mean_squared_error(y_test_actual, test_preds_actual)),
+        'R2': r2_score(y_test_actual, test_preds_actual)
     }
     
-    # Retrain on full dataset before future forecasting
-    model.fit(X, y)
+    # 3. Retrain trend and model on the full dataset before future forecasting
+    trend_model_full = LinearRegression()
+    trend_model_full.fit(df_agg[['Time_Idx']].values, df_agg['Sales_Revenue'].values)
     
-    # Residual standard deviation for prediction interval estimation
-    train_preds = model.predict(X)
-    residuals = y - train_preds
+    df_agg_detrended_full = df_agg.copy()
+    df_agg_detrended_full['Sales_Revenue'] = df_agg['Sales_Revenue'] - trend_model_full.predict(df_agg[['Time_Idx']].values)
+    
+    df_feats_full = build_regression_features(df_agg_detrended_full)
+    df_clean_full = df_feats_full.dropna().copy()
+    
+    X_full = df_clean_full[feature_cols]
+    y_full = df_clean_full['Sales_Revenue']
+    
+    model.fit(X_full, y_full)
+    
+    # Residual standard deviation for prediction interval estimation (computed on detrended residuals)
+    train_preds_detrended = model.predict(X_full)
+    residuals = y_full - train_preds_detrended
     residual_std = np.std(residuals) if len(residuals) > 1 else 1.0
     
     # Recursive Forecasting for Future Horizon
-    # Start with the full historical dataframe
-    history = df_agg.copy().sort_values('Date').reset_index(drop=True)
+    # Start with the full detrended history
+    history = df_agg_detrended_full.copy().sort_values('Date').reset_index(drop=True)
     last_date = history['Date'].max()
     
     future_records = []
     
     for i in range(horizon_months):
         next_date = last_date + pd.offsets.MonthEnd(1) * (i + 1)
+        next_time_idx = (next_date - min_date).days
         
-        # Build features for this future step
-        # Create a temp df with the new date
-        temp_row = pd.DataFrame({'Date': [next_date], 'Sales_Revenue': [np.nan]})
+        # Build features for this future step using a temp row in the detrended history
+        temp_row = pd.DataFrame({
+            'Date': [next_date], 
+            'Sales_Revenue': [np.nan], 
+            'Time_Idx': [next_time_idx]
+        })
         temp_history = pd.concat([history, temp_row], ignore_index=True)
         
-        # Build lag features on the temp_history
+        # Build lag features on the temp_history (which contains detrended sales)
         temp_feats = build_regression_features(temp_history)
         
         # Extract features for the very last row (the target future step)
-        row_feats = temp_feats.iloc[-1][feature_cols].to_frame().T
+        row_feats = temp_feats.iloc[[-1]][feature_cols].astype(float)
         
-        # Predict sales revenue for this month
-        pred_val = float(model.predict(row_feats)[0])
-        pred_val = max(0.0, pred_val) # Sales cannot be negative
+        # Predict detrended sales revenue for this month
+        pred_detrended = float(model.predict(row_feats)[0])
         
         # Store in historical log so it is used in subsequent lag feature calculations
-        history = pd.concat([history, pd.DataFrame({'Date': [next_date], 'Sales_Revenue': [pred_val]})], ignore_index=True)
+        history = pd.concat([history, pd.DataFrame({
+            'Date': [next_date], 
+            'Sales_Revenue': [pred_detrended], 
+            'Time_Idx': [next_time_idx]
+        })], ignore_index=True)
         
-        # Prediction bands
+        # Add the trend component back for the user-facing prediction
+        pred_trend = float(trend_model_full.predict([[next_time_idx]])[0])
+        pred_val = pred_detrended + pred_trend
+        pred_val = max(0.0, pred_val) # Sales cannot be negative
+        
+        # Prediction bands (also added to actual prediction)
         yhat_lower = max(0.0, pred_val - 1.96 * residual_std)
         yhat_upper = pred_val + 1.96 * residual_std
         

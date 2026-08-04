@@ -8,6 +8,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import List, Optional
+from dotenv import load_dotenv
+
+# Load environment variables from .env file automatically
+load_dotenv()
 
 # Import local modules
 from src.sample_generator import generate_sample_data
@@ -69,9 +73,18 @@ def apply_filters(df, req: DashboardRequest):
     
     # 1. Apply Date Filter
     if req.start_date:
-        df_filtered = df_filtered[df_filtered['Date'] >= pd.to_datetime(req.start_date)]
+        try:
+            start_dt = pd.to_datetime(req.start_date)
+            df_filtered = df_filtered[df_filtered['Date'] >= start_dt]
+        except Exception:
+            pass  # Ignore invalid date inputs gracefully
+            
     if req.end_date:
-        df_filtered = df_filtered[df_filtered['Date'] <= pd.to_datetime(req.end_date)]
+        try:
+            end_dt = pd.to_datetime(req.end_date)
+            df_filtered = df_filtered[df_filtered['Date'] <= end_dt]
+        except Exception:
+            pass  # Ignore invalid date inputs gracefully
         
     # 2. Apply Region Filter
     if req.regions and len(req.regions) > 0 and "All Regions" not in req.regions:
@@ -210,42 +223,46 @@ def get_dashboard_data(req: DashboardRequest):
             "percentage": float((row['Sales_Revenue'] / total_cat_rev * 100) if total_cat_rev > 0 else 0)
         })
         
-    # 6. Dynamic AI Insights
-    insights = []
-    # Insight 1: YoY Growth
-    if yoy_growth >= 0:
-        insights.append({
-            "icon": "🟢",
-            "text": f"Revenue increased by <b style='color:#00CC96;'>{yoy_growth:.1f}%</b> compared to last year. Strong performance in Q4 contributed the most."
-        })
-    else:
-        insights.append({
-            "icon": "🔴",
-            "text": f"Revenue decreased by <b style='color:#EF553B;'>{abs(yoy_growth):.1f}%</b> compared to last year. Strategic consolidation advised."
-        })
-    # Insight 2: Regional
-    if not region_sales.empty:
-        top_reg = region_sales.sort_values('Sales_Revenue', ascending=False).iloc[0]['Region']
-        insights.append({
-            "icon": "💡",
-            "text": f"The <b style='color:#FFFFFF;'>{top_reg} region</b> has the highest sales. Consider increasing inventory for high regional demand."
-        })
-    # Insight 3: Category
-    if not cat_sales.empty:
-        top_cat_row = cat_sales.sort_values('Sales_Revenue', ascending=False).iloc[0]
-        top_cat = top_cat_row['Product_Category']
-        pct = (top_cat_row['Sales_Revenue'] / total_revenue * 100) if total_revenue > 0 else 0.0
-        insights.append({
-            "icon": "⚡",
-            "text": f"<b style='color:#FFFFFF;'>{top_cat} category</b> contributed <b style='color:#636EFA;'>{pct:.1f}%</b> of total sales. Top performing category."
-        })
-    # Insight 4: Alert Region
-    if len(region_sales) > 1:
-        low_reg = region_sales.sort_values('Sales_Revenue', ascending=True).iloc[0]['Region']
-        insights.append({
-            "icon": "🔻",
-            "text": f"Sales dropped by <b style='color:#EF553B;'>8.4%</b> in <b style='color:#FFFFFF;'>{low_reg} region</b>. Review local marketing strategies."
-        })
+    # 6. Dynamic AI Insights (Hybrid Gemini / Rule-based fallback)
+    from src.gemini_insights import generate_gemini_insights_helper
+    insights = generate_gemini_insights_helper(df_filtered)
+    
+    if insights is None:
+        insights = []
+        # Insight 1: YoY Growth
+        if yoy_growth >= 0:
+            insights.append({
+                "icon": "🟢",
+                "text": f"Revenue increased by <b style='color:#00CC96;'>{yoy_growth:.1f}%</b> compared to last year. Strong performance in Q4 contributed the most."
+            })
+        else:
+            insights.append({
+                "icon": "🔴",
+                "text": f"Revenue decreased by <b style='color:#EF553B;'>{abs(yoy_growth):.1f}%</b> compared to last year. Strategic consolidation advised."
+            })
+        # Insight 2: Regional
+        if not region_sales.empty:
+            top_reg = region_sales.sort_values('Sales_Revenue', ascending=False).iloc[0]['Region']
+            insights.append({
+                "icon": "💡",
+                "text": f"The <b style='color:#FFFFFF;'>{top_reg} region</b> has the highest sales. Consider increasing inventory for high regional demand."
+            })
+        # Insight 3: Category
+        if not cat_sales.empty:
+            top_cat_row = cat_sales.sort_values('Sales_Revenue', ascending=False).iloc[0]
+            top_cat = top_cat_row['Product_Category']
+            pct = (top_cat_row['Sales_Revenue'] / total_revenue * 100) if total_revenue > 0 else 0.0
+            insights.append({
+                "icon": "⚡",
+                "text": f"<b style='color:#FFFFFF;'>{top_cat} category</b> contributed <b style='color:#636EFA;'>{pct:.1f}%</b> of total sales. Top performing category."
+            })
+        # Insight 4: Alert Region
+        if len(region_sales) > 1:
+            low_reg = region_sales.sort_values('Sales_Revenue', ascending=True).iloc[0]['Region']
+            insights.append({
+                "icon": "🔻",
+                "text": f"Sales dropped by <b style='color:#EF553B;'>8.4%</b> in <b style='color:#FFFFFF;'>{low_reg} region</b>. Review local marketing strategies."
+            })
         
     # 7. Model Performance Comparison
     perf_results = [
@@ -385,6 +402,72 @@ def run_forecast(req: ForecastRequest):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/analytics")
+def get_analytics_data(req: DashboardRequest):
+    """
+    Computes and returns detailed datasets for custom analytics charts.
+    """
+    global _df_raw
+    if req.date_col or req.sales_col:
+        _df_raw = None
+    df_base = get_base_data(req.date_col, req.sales_col)
+    df_filtered = apply_filters(df_base, req)
+    
+    if df_filtered.empty:
+        return {"error": "No data matches the selected filters."}
+        
+    # 1. Monthly Sales Trend by Product Category
+    df_filtered = df_filtered.copy()
+    df_filtered['Month_Str'] = df_filtered['Date'].dt.strftime('%Y-%m')
+    cat_monthly = df_filtered.groupby(['Month_Str', 'Product_Category']).agg({'Sales_Revenue': 'sum'}).reset_index()
+    
+    months = sorted(df_filtered['Month_Str'].unique().tolist())
+    categories = sorted(df_filtered['Product_Category'].unique().tolist())
+    
+    cat_series = {cat: [0.0] * len(months) for cat in categories}
+    for _, row in cat_monthly.iterrows():
+        m_idx = months.index(row['Month_Str'])
+        cat_series[row['Product_Category']][m_idx] = float(row['Sales_Revenue'])
+        
+    category_trend = {
+        "months": months,
+        "series": cat_series
+    }
+    
+    # 2. Price vs Volume Elasticity
+    prod_elasticity = df_filtered.groupby(['Product', 'Product_Category', 'Price_Per_Unit']).agg({'Units_Sold': 'sum'}).reset_index()
+    elasticity_data = []
+    for _, row in prod_elasticity.iterrows():
+        elasticity_data.append({
+            "product": row['Product'],
+            "category": row['Product_Category'],
+            "price": float(row['Price_Per_Unit']),
+            "units": int(row['Units_Sold'])
+        })
+        
+    # 3. Discount Performance
+    discount_perf = df_filtered.groupby('Discount').agg({
+        'Units_Sold': 'mean',
+        'Sales_Revenue': 'mean',
+        'Total_Profit': 'mean'
+    }).reset_index()
+    
+    discount_data = []
+    for _, row in discount_perf.iterrows():
+        discount_data.append({
+            "discount": float(row['Discount'] * 100),
+            "avg_units": float(row['Units_Sold']),
+            "revenue": float(row['Sales_Revenue']),
+            "profit": float(row['Total_Profit'])
+        })
+        
+    return {
+        "category_trend": category_trend,
+        "elasticity": elasticity_data,
+        "discount_performance": discount_data
+    }
 
 
 @app.post("/api/upload")

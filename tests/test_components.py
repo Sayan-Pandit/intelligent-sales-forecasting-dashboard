@@ -107,5 +107,50 @@ class TestDashboardComponents(unittest.TestCase):
         # Total forecast length should be historical length + future horizon (4 weeks)
         self.assertEqual(len(forecast_df), len(df_weekly) + 4)
 
+    def test_06_xgboost_forecasting(self):
+        """Test if the XGBoost Regressor trains and generates recursive forecasts"""
+        df = load_data(self.test_csv)
+        df_cleaned = clean_data(df)
+        df_weekly = aggregate_data(df_cleaned, frequency='W')
+        
+        forecast_df, metrics, name = train_regression_model(df_weekly, horizon_months=4, model_type='xgb')
+        
+        self.assertEqual(name, "XGBoost Regressor")
+        self.assertIn('MAE', metrics)
+        self.assertIn('RMSE', metrics)
+        self.assertIn('R2', metrics)
+        
+        self.assertIn('yhat', forecast_df.columns)
+        self.assertIn('yhat_lower', forecast_df.columns)
+        self.assertIn('yhat_upper', forecast_df.columns)
+        
+        self.assertEqual(len(forecast_df), len(df_weekly) + 4)
+
+    def test_07_gemini_insights_fallback(self):
+        """Test that generate_gemini_insights_helper returns None when no API key is set."""
+        import os
+        from src.gemini_insights import generate_gemini_insights_helper
+        import pandas as pd
+
+        # Remove key if present to ensure clean state
+        original_key = os.environ.pop("GEMINI_API_KEY", None)
+
+        try:
+            df = pd.DataFrame({
+                'Sales_Revenue': [100000.0, 200000.0],
+                'Region': ['East', 'West'],
+                'Product_Category': ['Electronics', 'Clothing'],
+                'Units_Sold': [150, 200],
+                'Total_Profit': [20000.0, 40000.0]
+            })
+
+            # Without API key, must return None (triggering rule-based fallback)
+            result = generate_gemini_insights_helper(df)
+            self.assertIsNone(result, "Expected None when GEMINI_API_KEY is not set")
+        finally:
+            # Restore original key if it was set
+            if original_key:
+                os.environ["GEMINI_API_KEY"] = original_key
+
 if __name__ == '__main__':
     unittest.main()

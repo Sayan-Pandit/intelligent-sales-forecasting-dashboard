@@ -66,6 +66,7 @@ menuItems.forEach(item => {
         if (tab === 'dashboard') {
             loadDashboard();
         } else if (tab === 'analytics') {
+            loadAnalyticsPanel();
             // Trigger Plotly charts resize to fit layout correctly
             setTimeout(() => {
                 window.dispatchEvent(new Event('resize'));
@@ -115,6 +116,7 @@ function setupFilters() {
         activeFilters.categories = [];
         
         loadDashboard();
+        if (window.showToast) showToast('Filters reset to defaults', 'info');
     });
     
     // Simulator controls
@@ -127,7 +129,8 @@ function setupFilters() {
         runSimulator();
     });
     simPrice.addEventListener('input', (e) => {
-        valSimPrice.textContent = `${e.target.value}%`;
+        const v = parseInt(e.target.value);
+        valSimPrice.textContent = v >= 0 ? `+${v}%` : `${v}%`;
         runSimulator();
     });
 
@@ -168,13 +171,14 @@ function setupFilters() {
             
             if (!response.ok) {
                 const err = await response.json();
-                alert(`Upload failed: ${err.detail || 'Server error'}`);
+                if (window.showToast) showToast(`Upload failed: ${err.detail || 'Server error'}`, 'error');
                 return;
             }
             
             const data = await response.json();
             if (data.success) {
                 mappingContainer.style.display = 'block';
+                if (window.showToast) showToast('File uploaded successfully. Review column mappings below.', 'success');
                 
                 mappingDate.innerHTML = '';
                 mappingSales.innerHTML = '';
@@ -201,7 +205,7 @@ function setupFilters() {
             }
         } catch (err) {
             console.error('Error uploading file:', err);
-            alert('Failed to upload file. Please try again.');
+            if (window.showToast) showToast('Failed to upload file. Please try again.', 'error');
         }
     });
 
@@ -291,6 +295,10 @@ async function loadDashboard() {
         updateDataSummary(dashboardData.summary);
         runSimulator(); // trigger initial simulator render
         
+        if (activeTab === 'analytics') {
+            loadAnalyticsPanel();
+        }
+        
         // Resize charts to fit viewport container
         window.dispatchEvent(new Event('resize'));
     } catch (e) {
@@ -301,25 +309,25 @@ async function loadDashboard() {
 // Update KPI cards UI
 function updateKPIs(kpis) {
     document.getElementById('kpi-revenue').textContent = `$${(kpis.revenue / 1e6).toFixed(2)}M`;
-    document.getElementById('kpi-revenue-growth').innerHTML = `▲ +${kpis.revenue_growth.toFixed(1)}% <span style='color:#8C8C9A; font-weight:normal;'>vs last year</span>`;
+    document.getElementById('kpi-revenue-growth').innerHTML = `▲ +${kpis.revenue_growth.toFixed(1)}% <span style='color:var(--text-muted); font-weight:400;'>vs last year</span>`;
     
     document.getElementById('kpi-profit').textContent = `$${(kpis.profit / 1e3).toFixed(1)}K`;
-    document.getElementById('kpi-profit-growth').innerHTML = `▲ +${kpis.profit_growth.toFixed(1)}% <span style='color:#8C8C9A; font-weight:normal;'>vs last year</span>`;
+    document.getElementById('kpi-profit-growth').innerHTML = `▲ +${kpis.profit_growth.toFixed(1)}% <span style='color:var(--text-muted); font-weight:400;'>vs last year</span>`;
     
     document.getElementById('kpi-units').textContent = kpis.units.toLocaleString();
-    document.getElementById('kpi-units-growth').innerHTML = `▲ +${kpis.units_growth.toFixed(1)}% <span style='color:#8C8C9A; font-weight:normal;'>vs last year</span>`;
+    document.getElementById('kpi-units-growth').innerHTML = `▲ +${kpis.units_growth.toFixed(1)}% <span style='color:var(--text-muted); font-weight:400;'>vs last year</span>`;
     
     document.getElementById('kpi-aov').textContent = `$${kpis.aov.toFixed(2)}`;
-    document.getElementById('kpi-aov-growth').innerHTML = `▲ +${kpis.aov_growth.toFixed(1)}% <span style='color:#8C8C9A; font-weight:normal;'>vs last year</span>`;
+    document.getElementById('kpi-aov-growth').innerHTML = `▲ +${kpis.aov_growth.toFixed(1)}% <span style='color:var(--text-muted); font-weight:400;'>vs last year</span>`;
     
     document.getElementById('kpi-margin').textContent = `${kpis.margin.toFixed(2)}%`;
-    document.getElementById('kpi-margin-growth').innerHTML = `▲ +${kpis.margin_growth.toFixed(1)}% <span style='color:#8C8C9A; font-weight:normal;'>vs last year</span>`;
+    document.getElementById('kpi-margin-growth').innerHTML = `▲ +${kpis.margin_growth.toFixed(1)}% <span style='color:var(--text-muted); font-weight:400;'>vs last year</span>`;
 }
 
 // Update sidebar forecast
 function updateSidebarForecast(fc) {
     document.getElementById('sb-fc-value').textContent = `$${(fc.val / 1e6).toFixed(2)}M`;
-    document.getElementById('sb-fc-growth').innerHTML = `▲ +${fc.growth.toFixed(1)}% <span style="color:#8C8C9A; font-weight:normal;">from last 3m</span>`;
+    document.getElementById('sb-fc-growth').innerHTML = `▲ +${fc.growth.toFixed(1)}% <span style="color:var(--text-muted); font-weight:400;">from last 3m</span>`;
     
     // Render sidebar sparkline (plotly style)
     const trace = {
@@ -361,9 +369,9 @@ function renderSalesTrendChart(trend) {
         title: { text: 'Sales Trend Overview', font: { color: '#FFFFFF', size: 14, family: 'Outfit' } },
         paper_bgcolor: 'rgba(0,0,0,0)',
         plot_bgcolor: 'rgba(0,0,0,0)',
-        font: { color: '#E0E0E6', family: 'Outfit' },
-        xaxis: { gridcolor: '#2B2B3D', linecolor: '#2B2B3D', tickfont: {color:'#8C8C9A'} },
-        yaxis: { gridcolor: '#2B2B3D', linecolor: '#2B2B3D', tickfont: {color:'#8C8C9A'} },
+        font: { color: '#A0A0B8', family: 'Outfit' },
+        xaxis: { gridcolor: 'rgba(255,255,255,0.05)', linecolor: 'rgba(255,255,255,0.05)', tickfont: {color:'#A0A0B8'} },
+        yaxis: { gridcolor: 'rgba(255,255,255,0.05)', linecolor: 'rgba(255,255,255,0.05)', tickfont: {color:'#A0A0B8'} },
         margin: { l: 40, r: 20, t: 40, b: 30 },
         height: 230
     };
@@ -438,16 +446,26 @@ function renderInsights(insights) {
     const container = document.getElementById('ai-insights-list');
     container.innerHTML = '';
     
+    if (!insights || insights.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state" style="padding: 24px 16px;">
+                <svg width="32" height="32" fill="none" viewBox="0 0 24 24" aria-hidden="true" style="opacity:0.35;">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M12 8v4m0 4h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <span class="empty-state-title" style="font-size:14px;">No insights yet</span>
+                <span class="empty-state-desc">Insights will appear once data is loaded.</span>
+            </div>
+        `;
+        return;
+    }
+    
     insights.forEach(ins => {
         const item = document.createElement('div');
         item.className = 'insight-item';
         item.innerHTML = `
-            <div class="insight-icon-box" style="background:rgba(255, 255, 255, 0.04);">
-                ${ins.icon}
-            </div>
-            <div style="color:#E0E0E6;">
-                ${ins.text}
-            </div>
+            <span class="insight-icon" aria-hidden="true">${ins.icon}</span>
+            <span>${ins.text}</span>
         `;
         container.appendChild(item);
     });
@@ -778,4 +796,130 @@ async function loadProductsPanel() {
 
 function valStr(val) {
     return val.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+// ANALYTICS PANEL LOGIC
+async function loadAnalyticsPanel() {
+    try {
+        const response = await fetch('/api/analytics', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(activeFilters)
+        });
+        const data = await response.json();
+        if (data.error) {
+            console.error(data.error);
+            return;
+        }
+        
+        renderCategoryTrend(data.category_trend);
+        renderPriceElasticity(data.elasticity);
+        renderDiscountPerformance(data.discount_performance);
+    } catch (e) {
+        console.error('Error loading analytics:', e);
+    }
+}
+
+function renderCategoryTrend(catTrend) {
+    const traces = Object.keys(catTrend.series).map(cat => {
+        return {
+            x: catTrend.months,
+            y: catTrend.series[cat],
+            name: cat,
+            type: 'bar'
+        };
+    });
+    
+    const layout = {
+        title: { text: 'Monthly Sales Contribution by Category', font: { color: '#FFFFFF', size: 14, family: 'Outfit' } },
+        barmode: 'stack',
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        font: { color: '#E0E0E6', family: 'Outfit' },
+        xaxis: { gridcolor: '#2B2B3D', linecolor: '#2B2B3D', tickfont: {color:'#8C8C9A'} },
+        yaxis: { gridcolor: '#2B2B3D', linecolor: '#2B2B3D', tickfont: {color:'#8C8C9A'} },
+        margin: { l: 50, r: 20, t: 40, b: 30 },
+        height: 280
+    };
+    
+    Plotly.newPlot('chart-category-trend', traces, layout, {displayModeBar: false});
+}
+
+function renderPriceElasticity(elasticity) {
+    const traces = [];
+    const catGroups = {};
+    elasticity.forEach(item => {
+        if (!catGroups[item.category]) catGroups[item.category] = [];
+        catGroups[item.category].push(item);
+    });
+    
+    Object.keys(catGroups).forEach(cat => {
+        const group = catGroups[cat];
+        traces.push({
+            x: group.map(g => g.price),
+            y: group.map(g => g.units),
+            mode: 'markers',
+            type: 'scatter',
+            name: cat,
+            text: group.map(g => g.product),
+            marker: { size: 8 }
+        });
+    });
+    
+    const layout = {
+        title: { text: 'Price Elasticity (Price vs Units Sold)', font: { color: '#FFFFFF', size: 14, family: 'Outfit' } },
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        font: { color: '#E0E0E6', family: 'Outfit' },
+        xaxis: { title: { text: 'Price Per Unit ($)', font: { size: 11 } }, gridcolor: '#2B2B3D', linecolor: '#2B2B3D', tickfont: {color:'#8C8C9A'} },
+        yaxis: { title: { text: 'Total Units Sold', font: { size: 11 } }, gridcolor: '#2B2B3D', linecolor: '#2B2B3D', tickfont: {color:'#8C8C9A'} },
+        margin: { l: 50, r: 20, t: 40, b: 40 },
+        height: 280
+    };
+    
+    Plotly.newPlot('chart-price-elasticity', traces, layout, {displayModeBar: false});
+}
+
+function renderDiscountPerformance(discountData) {
+    const discounts = discountData.map(d => `${d.discount.toFixed(0)}%`);
+    const avgUnits = discountData.map(d => d.avg_units);
+    const profit = discountData.map(d => d.profit);
+    
+    const trace1 = {
+        x: discounts,
+        y: avgUnits,
+        name: 'Avg Units Sold',
+        type: 'bar',
+        marker: { color: '#636EFA' }
+    };
+    const trace2 = {
+        x: discounts,
+        y: profit,
+        name: 'Total Profit ($)',
+        type: 'bar',
+        yaxis: 'y2',
+        marker: { color: '#00CC96' }
+    };
+    
+    const layout = {
+        title: { text: 'Discount Impact on Volume vs Profitability', font: { color: '#FFFFFF', size: 14, family: 'Outfit' } },
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        font: { color: '#E0E0E6', family: 'Outfit' },
+        xaxis: { gridcolor: '#2B2B3D', linecolor: '#2B2B3D', tickfont: {color:'#8C8C9A'} },
+        yaxis: { title: 'Avg Units Sold', titlefont: {color: '#636EFA'}, tickfont: {color:'#8C8C9A'}, gridcolor: '#2B2B3D' },
+        yaxis2: {
+            title: 'Total Profit ($)',
+            titlefont: {color: '#00CC96'},
+            tickfont: {color:'#8C8C9A'},
+            overlaying: 'y',
+            side: 'right',
+            gridcolor: 'rgba(0,0,0,0)'
+        },
+        legend: { font: { color: '#8C8C9A' }, x: 1.1, y: 1 },
+        margin: { l: 50, r: 80, t: 45, b: 30 },
+        height: 280
+    };
+    
+    Plotly.newPlot('chart-discount-performance', [trace1, trace2], layout, {displayModeBar: false});
 }

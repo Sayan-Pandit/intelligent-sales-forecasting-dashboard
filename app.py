@@ -492,6 +492,11 @@ def evaluate_all_models(df):
     return formatted_results
 
 def generate_dynamic_insights(df):
+    from src.gemini_insights import generate_gemini_insights_helper
+    insights = generate_gemini_insights_helper(df)
+    if insights is not None:
+        return insights
+        
     insights = []
     
     # 1. Total Revenue Growth
@@ -717,9 +722,9 @@ if df_raw is not None:
         # 5. User Profile Card at Sidebar Bottom
         st.sidebar.markdown("""
         <div class="sb-profile-card">
-            <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #636EFA 0%, #AB63FA 100%); display: flex; align-items: center; justify-content: center; font-weight: bold; color: #FFFFFF;">JM</div>
+            <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #636EFA 0%, #AB63FA 100%); display: flex; align-items: center; justify-content: center; font-weight: bold; color: #FFFFFF;">SP</div>
             <div>
-                <div style="font-size: 13.5px; font-weight: 600; color: #FFFFFF;">John Manager</div>
+                <div style="font-size: 13.5px; font-weight: 600; color: #FFFFFF;">Sayan Pandit</div>
                 <div style="font-size: 11.5px; color: #8C8C9A;">Admin</div>
             </div>
         </div>
