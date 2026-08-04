@@ -403,6 +403,7 @@ function renderRegionalMap(map) {
     
     const layout = {
         title: { text: 'Sales by Region', font: { color: '#FFFFFF', size: 14, family: 'Outfit' } },
+        dragmode: false, // Disables drawing zoom/selection boxes when clicking and dragging
         geo: {
             showframe: false,
             showcoastlines: true,
