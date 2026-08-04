@@ -90,12 +90,17 @@ body {
         radial-gradient(ellipse 500px 350px at 80% 80%, rgba(176, 106, 255, 0.03) 0%, transparent 70%);
 }
 
-/* ── Focus styles — global ──────────────────────────────────────── */
-:focus-visible {
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex="0"]:focus-visible {
     outline: 2px solid var(--color-primary);
     outline-offset: 2px;
     border-radius: var(--radius-sm);
 }
+
 
 /* ── Scrollbar ──────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
