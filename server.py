@@ -68,6 +68,15 @@ class DashboardRequest(BaseModel):
     date_col: Optional[str] = None
     sales_col: Optional[str] = None
 
+class ReportRequest(BaseModel):
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+    regions: Optional[List[str]] = None
+    categories: Optional[List[str]] = None
+    date_col: Optional[str] = None
+    sales_col: Optional[str] = None
+    report_type: str = "executive"
+
 def apply_filters(df, req: DashboardRequest):
     df_filtered = df.copy()
     
@@ -512,7 +521,23 @@ def reset_datasource():
     _df_raw = None
     return {"success": True}
 
+@app.post("/api/report")
+def generate_report_endpoint(req: ReportRequest):
+    global _df_raw
+    if req.date_col or req.sales_col:
+        _df_raw = None
+    df_base = get_base_data(req.date_col, req.sales_col)
+    df_filtered = apply_filters(df_base, req)
+    
+    if df_filtered.empty:
+        return {"error": "No data matches the selected filters for generating a report."}
+        
+    from src.reports_generator import generate_report_content
+    report_html = generate_report_content(df_filtered, req.report_type)
+    return {"success": True, "report_html": report_html}
+
 # Mount static frontend directory
+
 frontend_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend")
 if os.path.exists(frontend_dir):
     app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="static")

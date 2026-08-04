@@ -152,5 +152,27 @@ class TestDashboardComponents(unittest.TestCase):
             if original_key:
                 os.environ["GEMINI_API_KEY"] = original_key
 
+    def test_08_report_generation(self):
+        """Test report generation fallback produces valid HTML containing expected segments."""
+        from src.reports_generator import generate_report_content
+        import pandas as pd
+
+        df = pd.DataFrame({
+            'Sales_Revenue': [500000.0, 300000.0],
+            'Region': ['East', 'West'],
+            'Product_Category': ['Electronics', 'Furniture'],
+            'Product': ['Laptop Pro', 'Ergo Chair'],
+            'Units_Sold': [100, 150],
+            'Total_Profit': [100000.0, 60000.0]
+        })
+
+        # Test executive summary generation
+        html = generate_report_content(df, report_type="executive")
+        self.assertIsInstance(html, str)
+        self.assertIn("Executive Summary", html)
+        self.assertIn("Regional Distribution Analysis", html)
+        self.assertIn("Product Performance &amp; Breakdown", html)
+        self.assertIn("Strategic Recommendations", html)
+
 if __name__ == '__main__':
     unittest.main()

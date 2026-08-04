@@ -73,6 +73,8 @@ menuItems.forEach(item => {
             }, 100);
         } else if (tab === 'products') {
             loadProductsPanel();
+        } else if (tab === 'reports') {
+            initReportsPanel();
         }
     });
 });
@@ -923,3 +925,120 @@ function renderDiscountPerformance(discountData) {
     
     Plotly.newPlot('chart-discount-performance', [trace1, trace2], layout, {displayModeBar: false});
 }
+
+// Reports Tab Handler
+let currentReportHtml = '';
+function initReportsPanel() {
+    const btnGenerate = document.getElementById('btn-generate-report');
+    const reportTypeSelect = document.getElementById('report-type');
+    const reportLoading = document.getElementById('report-loading');
+    const reportContainer = document.getElementById('report-content-container');
+    const reportTitleDisplay = document.getElementById('report-title-display');
+    const reportBodyDisplay = document.getElementById('report-body-display');
+    
+    const btnDownloadTxt = document.getElementById('btn-download-report-txt');
+    const btnDownloadHtml = document.getElementById('btn-download-report-html');
+    
+    // Clear display initially if not loaded
+    if (!currentReportHtml) {
+        reportContainer.style.display = 'none';
+    }
+
+    // Unbind previous event listener to avoid duplicate events on tab click
+    btnGenerate.onclick = async () => {
+        reportLoading.style.display = 'flex';
+        reportContainer.style.display = 'none';
+        
+        const reqPayload = {
+            ...activeFilters,
+            report_type: reportTypeSelect.value
+        };
+        
+        try {
+            const resp = await fetch('/api/report', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(reqPayload)
+            });
+            
+            const data = await resp.json();
+            reportLoading.style.display = 'none';
+            
+            if (data.error) {
+                if (window.showToast) showToast(data.error, 'error');
+                return;
+            }
+            
+            if (data.success) {
+                currentReportHtml = data.report_html;
+                reportContainer.style.display = 'block';
+                
+                // Map select value to readable title
+                const titleMap = {
+                    'executive': 'Executive Sales & AI Performance Report',
+                    'regional': 'Regional Dynamics & Market Share Report',
+                    'products': 'Product Catalogue Analysis & Revenue Report'
+                };
+                reportTitleDisplay.textContent = titleMap[reportTypeSelect.value] || 'Sales Report';
+                
+                // Display report content
+                reportBodyDisplay.innerHTML = currentReportHtml;
+                
+                if (window.showToast) showToast('AI Report compiled successfully.', 'success');
+            }
+        } catch (err) {
+            reportLoading.style.display = 'none';
+            console.error('Error generating report:', err);
+            if (window.showToast) showToast('Report generation failed. Please try again.', 'error');
+        }
+    };
+
+    // Download handlers
+    btnDownloadTxt.onclick = () => {
+        if (!currentReportHtml) return;
+        // Strip HTML tags for clean text report
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = currentReportHtml;
+        const textContent = tempDiv.textContent || tempDiv.innerText || '';
+        
+        const blob = new Blob([textContent], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${reportTypeSelect.value}_report_${new Date().toISOString().slice(0, 10)}.txt`;
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+
+    btnDownloadHtml.onclick = () => {
+        if (!currentReportHtml) return;
+        const docHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Sales Report</title>
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #1E1E2F; }
+        b { color: #6B74FF; }
+        h3 { font-size: 24px; color: #1E1E2F; border-bottom: 2px solid #EAEAEA; padding-bottom: 8px; }
+        h4 { color: #6B74FF; font-size: 16px; text-transform: uppercase; margin-top: 24px; margin-bottom: 8px; }
+        ul { margin-left: 20px; margin-bottom: 16px; }
+        li { margin-bottom: 6px; }
+    </style>
+</head>
+<body>
+    ${currentReportHtml}
+</body>
+</html>
+        `;
+        const blob = new Blob([docHtml], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${reportTypeSelect.value}_report_${new Date().toISOString().slice(0, 10)}.html`;
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+}
+
