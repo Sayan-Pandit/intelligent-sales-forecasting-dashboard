@@ -495,24 +495,26 @@ function renderCategoryDonut(categories) {
     const layout = {
         title: { text: 'Sales by Category', font: { color: '#FFFFFF', size: 14, family: 'Outfit' } },
         paper_bgcolor: 'rgba(0,0,0,0)',
-        font: { color: '#E0E0E6', family: 'Outfit' },
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        font: { color: '#A0A0B8', family: 'Outfit' },
         annotations: [{
-            text: `<span style='font-size:10px;color:#8C8C9A;'>Total</span><br><b style='font-size:14px;color:#FFFFFF;'>$${(total/1e6).toFixed(2)}M</b>`,
+            text: `<span style='font-size:10px;color:var(--text-secondary);'>Total</span><br><b style='font-size:14px;color:#FFFFFF;'>$${(total/1e6).toFixed(2)}M</b>`,
             x: 0.5, y: 0.5,
             showarrow: false
         }],
         legend: {
-            orientation: 'v',
-            yanchor: 'middle', y: 0.5,
-            xanchor: 'left', x: 0.95,
-            font: { size: 10, color: '#8C8C9A' }
+            orientation: 'h',
+            yanchor: 'top', y: -0.05,
+            xanchor: 'center', x: 0.5,
+            font: { size: 10, color: '#A0A0B8' }
         },
-        margin: { l: 0, r: 80, t: 40, b: 0 },
-        height: 250
+        margin: { l: 10, r: 10, t: 40, b: 40 },
+        height: 280
     };
     
     Plotly.newPlot('chart-category-donut', [trace], layout, {displayModeBar: false});
 }
+
 
 // Render Model Comparison Table
 function renderModelComparison(perf) {
