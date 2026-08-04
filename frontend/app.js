@@ -406,11 +406,13 @@ function renderRegionalMap(map) {
         geo: {
             showframe: false,
             showcoastlines: true,
-            coastlinecolor: '#2B2B3D',
+            coastlinecolor: 'rgba(255, 255, 255, 0.08)',
             projection: { type: 'equirectangular' },
             backgroundcolor: 'rgba(0,0,0,0)',
+            showocean: true,
+            oceancolor: '#0B0B16',
             landcolor: '#16162B',
-            lakecolor: '#0F0F1A',
+            lakecolor: '#0B0B16',
             showland: true
         },
         paper_bgcolor: 'rgba(0,0,0,0)',
