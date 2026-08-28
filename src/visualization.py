@@ -48,6 +48,11 @@ def apply_layout_theme(fig):
             bordercolor='rgba(0,0,0,0)'
         ),
         hovermode="x unified",
+        hoverlabel=dict(
+            bgcolor='#16162A',
+            bordercolor='#6B74FF',
+            font=dict(color='#FFFFFF', family="Outfit, Inter, sans-serif", size=12)
+        ),
         margin=dict(l=30, r=30, t=40, b=30)
     )
     return fig
@@ -353,7 +358,8 @@ def plot_forecast(historical_df, forecast_df, model_name):
         mode='lines+markers',
         name='Historical Sales',
         line=dict(color=COLORS['text'], width=2),
-        marker=dict(size=4)
+        marker=dict(size=4),
+        hovertemplate='<b>Date</b>: %{x|%b %Y}<br><b>Historical Sales</b>: $%{y:,.2f}<extra></extra>'
     ))
     
     if len(future_forecast) > 0:
@@ -385,7 +391,8 @@ def plot_forecast(historical_df, forecast_df, model_name):
             mode='lines+markers',
             name=f'{model_name} Forecast',
             line=dict(color=COLORS['primary'], width=3, dash='dash'),
-            marker=dict(size=6, color=COLORS['accent'])
+            marker=dict(size=6, color=COLORS['accent']),
+            hovertemplate=f'<b>Date</b>: %{{x|%b %Y}}<br><b>{model_name} Forecast</b>: $%{{y:,.2f}}<extra></extra>'
         ))
         
     fig.update_layout(

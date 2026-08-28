@@ -36,4 +36,6 @@ temp/
 
 # Data files
 data/*.csv
+data/*.xlsx
+data/*.xls
 

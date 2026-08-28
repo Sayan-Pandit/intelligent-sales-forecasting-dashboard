@@ -80,7 +80,8 @@ def generate_gemini_insights_helper(df_filtered):
             '[{"icon":"📈","text":"Revenue grew strongly this quarter."},{"icon":"🔻","text":"South region lags others."}]'
         )
 
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={api_key}"
+        model_name = os.environ.get("GEMINI_MODEL", "gemini-3.6-flash")
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
         headers = {"Content-Type": "application/json"}
         payload = {
             "contents": [{"parts": [{"text": prompt}]}],
