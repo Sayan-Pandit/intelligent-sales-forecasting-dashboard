@@ -7,3 +7,7 @@ streamlit
 openpyxl
 requests
 python-dotenv
+fastapi
+uvicorn
+python-multipart
+

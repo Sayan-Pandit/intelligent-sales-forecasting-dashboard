@@ -153,8 +153,8 @@ class TestDashboardComponents(unittest.TestCase):
                 os.environ["GEMINI_API_KEY"] = original_key
 
     def test_08_report_generation(self):
-        """Test report generation fallback produces valid HTML containing expected segments."""
-        from src.reports_generator import generate_report_content
+        """Test report generation fallback and main function produce valid HTML."""
+        from src.reports_generator import generate_report_content, generate_fallback_report
         import pandas as pd
 
         df = pd.DataFrame({
@@ -166,13 +166,26 @@ class TestDashboardComponents(unittest.TestCase):
             'Total_Profit': [100000.0, 60000.0]
         })
 
-        # Test executive summary generation
+        # Test fallback report generator explicitly
+        region_summary = {'East': 500000.0, 'West': 300000.0}
+        cat_summary = {'Electronics': 500000.0, 'Furniture': 300000.0}
+        top_products = [{'name': 'Laptop Pro', 'revenue': 500000.0}, {'name': 'Ergo Chair', 'revenue': 300000.0}]
+        
+        fallback_html = generate_fallback_report(
+            "executive", 800000.0, 160000.0, 20.0, 250, 3200.0,
+            region_summary, cat_summary, top_products
+        )
+        self.assertIsInstance(fallback_html, str)
+        self.assertIn("Executive Summary", fallback_html)
+        self.assertIn("Regional Distribution Analysis", fallback_html)
+        self.assertIn("Product Performance &amp; Breakdown", fallback_html)
+        self.assertIn("Strategic Recommendations", fallback_html)
+
+        # Test main report generator (returns HTML string whether via API or fallback)
         html = generate_report_content(df, report_type="executive")
         self.assertIsInstance(html, str)
-        self.assertIn("Executive Summary", html)
-        self.assertIn("Regional Distribution Analysis", html)
-        self.assertIn("Product Performance &amp; Breakdown", html)
-        self.assertIn("Strategic Recommendations", html)
+        self.assertGreater(len(html), 50)
+        self.assertTrue(html.strip().startswith("<div") or "<p" in html or "<h" in html)
 
 if __name__ == '__main__':
     unittest.main()

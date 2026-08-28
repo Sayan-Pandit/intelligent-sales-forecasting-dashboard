@@ -46,23 +46,23 @@ menuItems.forEach(item => {
     item.addEventListener('click', () => {
         menuItems.forEach(mi => mi.classList.remove('active'));
         item.classList.add('active');
-        
+
         const tab = item.getAttribute('data-tab');
         activeTab = tab;
-        
+
         // Update Title
         pageTitle.textContent = tab.charAt(0).toUpperCase() + tab.slice(1);
-        
+
         // Show panel
         panels.forEach(p => p.classList.remove('active'));
-        
+
         let targetPanel = document.getElementById(`panel-${tab}`);
         if (!targetPanel) {
             targetPanel = document.getElementById('panel-placeholder');
             document.getElementById('placeholder-title').textContent = tab.charAt(0).toUpperCase() + tab.slice(1);
         }
         targetPanel.classList.add('active');
-        
+
         if (tab === 'dashboard') {
             loadDashboard();
         } else if (tab === 'analytics') {
@@ -104,23 +104,23 @@ function setupFilters() {
         activeFilters.categories = e.target.value === 'All Categories' ? [] : [e.target.value];
         loadDashboard();
     });
-    
+
     btnResetFilters.addEventListener('click', () => {
         startDateInput.value = config.min_date;
         endDateInput.value = config.max_date;
         regionSelect.value = 'All Regions';
         categorySelect.value = 'All Categories';
         repSelect.value = 'All Representatives';
-        
+
         activeFilters.start_date = config.min_date;
         activeFilters.end_date = config.max_date;
         activeFilters.regions = [];
         activeFilters.categories = [];
-        
+
         loadDashboard();
         if (window.showToast) showToast('Filters reset to defaults', 'info');
     });
-    
+
     // Simulator controls
     simDiscount.addEventListener('input', (e) => {
         valSimDiscount.textContent = `${e.target.value}%`;
@@ -147,10 +147,10 @@ function setupFilters() {
             }
             uploadContainer.style.display = 'none';
             mappingContainer.style.display = 'none';
-            
+
             delete activeFilters.date_col;
             delete activeFilters.sales_col;
-            
+
             await fetchConfig();
             loadDashboard();
         } else {
@@ -161,47 +161,47 @@ function setupFilters() {
     fileUploader.addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        
+
         const formData = new FormData();
         formData.append('file', file);
-        
+
         try {
             const response = await fetch('/api/upload', {
                 method: 'POST',
                 body: formData
             });
-            
+
             if (!response.ok) {
                 const err = await response.json();
                 if (window.showToast) showToast(`Upload failed: ${err.detail || 'Server error'}`, 'error');
                 return;
             }
-            
+
             const data = await response.json();
             if (data.success) {
                 mappingContainer.style.display = 'block';
                 if (window.showToast) showToast('File uploaded successfully. Review column mappings below.', 'success');
-                
+
                 mappingDate.innerHTML = '';
                 mappingSales.innerHTML = '';
-                
+
                 data.columns.forEach(col => {
                     const optDate = document.createElement('option');
                     optDate.value = col;
                     optDate.textContent = col;
                     if (col === data.suggested_date) optDate.selected = true;
                     mappingDate.appendChild(optDate);
-                    
+
                     const optSales = document.createElement('option');
                     optSales.value = col;
                     optSales.textContent = col;
                     if (col === data.suggested_sales) optSales.selected = true;
                     mappingSales.appendChild(optSales);
                 });
-                
+
                 activeFilters.date_col = mappingDate.value;
                 activeFilters.sales_col = mappingSales.value;
-                
+
                 await fetchConfig();
                 loadDashboard();
             }
@@ -234,16 +234,16 @@ async function fetchConfig() {
         if (params.length > 0) {
             url += '?' + params.join('&');
         }
-        
+
         const response = await fetch(url);
         config = await response.json();
-        
+
         startDateInput.value = config.min_date;
         endDateInput.value = config.max_date;
-        
+
         activeFilters.start_date = config.min_date;
         activeFilters.end_date = config.max_date;
-        
+
         // Populate Regions Select
         regionSelect.innerHTML = '<option value="All Regions">All Regions</option>';
         config.regions.forEach(r => {
@@ -252,7 +252,7 @@ async function fetchConfig() {
             opt.textContent = r;
             regionSelect.appendChild(opt);
         });
-        
+
         // Populate Categories Select
         categorySelect.innerHTML = '<option value="All Categories">All Categories</option>';
         config.categories.forEach(c => {
@@ -274,18 +274,18 @@ async function loadDashboard() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(activeFilters)
         });
-        
+
         dashboardData = await response.json();
         if (dashboardData.error) {
             alert(dashboardData.error);
             return;
         }
-        
+
         // Update header dates
         const sDate = new Date(activeFilters.start_date);
         const eDate = new Date(activeFilters.end_date);
-        displayDateRange.textContent = `${sDate.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'})} - ${eDate.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'})}`;
-        
+        displayDateRange.textContent = `${sDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - ${eDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+
         updateKPIs(dashboardData.kpis);
         renderSalesTrendChart(dashboardData.trend);
         renderRegionalMap(dashboardData.map);
@@ -296,11 +296,11 @@ async function loadDashboard() {
         updateSidebarForecast(dashboardData.sidebar_forecast);
         updateDataSummary(dashboardData.summary);
         runSimulator(); // trigger initial simulator render
-        
+
         if (activeTab === 'analytics') {
             loadAnalyticsPanel();
         }
-        
+
         // Resize charts to fit viewport container
         window.dispatchEvent(new Event('resize'));
     } catch (e) {
@@ -316,7 +316,7 @@ function renderGrowth(elementId, val, label = "vs last year") {
     const arrow = isNegative ? '▼' : '▲';
     const sign = isNegative ? '-' : '+';
     const absVal = Math.abs(val).toFixed(1);
-    
+
     if (isNegative) {
         el.classList.remove('positive');
         el.classList.add('negative');
@@ -331,16 +331,16 @@ function renderGrowth(elementId, val, label = "vs last year") {
 function updateKPIs(kpis) {
     document.getElementById('kpi-revenue').textContent = `$${(kpis.revenue / 1e6).toFixed(2)}M`;
     renderGrowth('kpi-revenue-growth', kpis.revenue_growth);
-    
+
     document.getElementById('kpi-profit').textContent = `$${(kpis.profit / 1e3).toFixed(1)}K`;
     renderGrowth('kpi-profit-growth', kpis.profit_growth);
-    
+
     document.getElementById('kpi-units').textContent = kpis.units.toLocaleString();
     renderGrowth('kpi-units-growth', kpis.units_growth);
-    
+
     document.getElementById('kpi-aov').textContent = `$${kpis.aov.toFixed(2)}`;
     renderGrowth('kpi-aov-growth', kpis.aov_growth);
-    
+
     document.getElementById('kpi-margin').textContent = `${kpis.margin.toFixed(2)}%`;
     renderGrowth('kpi-margin-growth', kpis.margin_growth);
 }
@@ -350,10 +350,10 @@ function updateSidebarForecast(fc) {
     document.getElementById('sb-fc-value').textContent = `$${(fc.val / 1e6).toFixed(2)}M`;
     renderGrowth('sb-fc-growth', fc.growth, "from last 3m");
 
-    
+
     // Render sidebar sparkline (plotly style)
     const trace = {
-        x: Array.from({length: fc.sparkline.length}, (_, i) => i),
+        x: Array.from({ length: fc.sparkline.length }, (_, i) => i),
         y: fc.sparkline,
         type: 'scatter',
         mode: 'lines',
@@ -369,14 +369,14 @@ function updateSidebarForecast(fc) {
         plot_bgcolor: 'rgba(0,0,0,0)',
         height: 35
     };
-    Plotly.newPlot('sb-sparkline-chart', [trace], layout, {displayModeBar: false});
+    Plotly.newPlot('sb-sparkline-chart', [trace], layout, { displayModeBar: false });
 }
 
 // Render Sales Trend Chart
 function renderSalesTrendChart(trend) {
     const dates = trend.map(t => t.date);
     const revs = trend.map(t => t.revenue);
-    
+
     const trace = {
         x: dates,
         y: revs,
@@ -384,21 +384,32 @@ function renderSalesTrendChart(trend) {
         mode: 'lines+markers',
         name: 'Actual Sales',
         line: { color: '#636EFA', width: 3 },
-        marker: { size: 6, color: '#636EFA' }
+        marker: { size: 6, color: '#636EFA' },
+        hoverlabel: {
+            bgcolor: '#131322',
+            bordercolor: '#636EFA',
+            font: { color: '#FFFFFF', family: 'Outfit, sans-serif', size: 12 }
+        },
+        hovertemplate: '<b>%{x}</b><br>Sales Revenue: <b>$%{y:,.2f}</b><extra></extra>'
     };
-    
+
     const layout = {
         title: { text: 'Sales Trend Overview', font: { color: '#FFFFFF', size: 14, family: 'Outfit' } },
         paper_bgcolor: 'rgba(0,0,0,0)',
         plot_bgcolor: 'rgba(0,0,0,0)',
         font: { color: '#A0A0B8', family: 'Outfit' },
-        xaxis: { gridcolor: 'rgba(255,255,255,0.05)', linecolor: 'rgba(255,255,255,0.05)', tickfont: {color:'#A0A0B8'} },
-        yaxis: { gridcolor: 'rgba(255,255,255,0.05)', linecolor: 'rgba(255,255,255,0.05)', tickfont: {color:'#A0A0B8'} },
+        hoverlabel: {
+            bgcolor: '#131322',
+            bordercolor: '#6B74FF',
+            font: { family: 'Outfit, sans-serif', size: 12, color: '#FFFFFF' }
+        },
+        xaxis: { gridcolor: 'rgba(255,255,255,0.05)', linecolor: 'rgba(255,255,255,0.05)', tickfont: { color: '#A0A0B8' } },
+        yaxis: { gridcolor: 'rgba(255,255,255,0.05)', linecolor: 'rgba(255,255,255,0.05)', tickfont: { color: '#A0A0B8' } },
         margin: { l: 40, r: 20, t: 40, b: 30 },
         height: 230
     };
-    
-    Plotly.newPlot('chart-sales-trend', [trace], layout, {displayModeBar: false});
+
+    Plotly.newPlot('chart-sales-trend', [trace], layout, { displayModeBar: false });
 }
 
 // Render Regional Map (Natural Earth World Projection)
@@ -406,7 +417,7 @@ function renderRegionalMap(map) {
     const locations = map.map(m => m.country);
     const sales = map.map(m => m.sales);
     const hover = map.map(m => `${m.region}: $${(m.sales).toLocaleString()}`);
-    
+
     const trace = {
         type: 'choropleth',
         locations: locations,
@@ -420,7 +431,7 @@ function renderRegionalMap(map) {
         ],
         showscale: false
     };
-    
+
     const layout = {
         title: { text: 'Sales by Region', font: { color: '#FFFFFF', size: 14, family: 'Outfit' } },
         dragmode: false, // Disables drawing zoom/selection boxes when clicking and dragging
@@ -437,20 +448,25 @@ function renderRegionalMap(map) {
             showland: true
         },
         paper_bgcolor: 'rgba(0,0,0,0)',
+        hoverlabel: {
+            bgcolor: '#131322',
+            bordercolor: '#6B74FF',
+            font: { family: 'Outfit, sans-serif', size: 12, color: '#FFFFFF' }
+        },
         margin: { l: 0, r: 0, t: 40, b: 0 },
         height: 250
     };
-    
-    Plotly.newPlot('chart-regional-map', [trace], layout, {displayModeBar: false});
+
+    Plotly.newPlot('chart-regional-map', [trace], layout, { displayModeBar: false });
 }
 
 // Render Top Products List
 function renderTopProducts(products) {
     const container = document.getElementById('top-products-list');
     container.innerHTML = '';
-    
+
     products.forEach(p => {
-        const valStr = p.revenue >= 1e6 ? `$${(p.revenue/1e6).toFixed(2)}M` : `$${(p.revenue/1e3).toFixed(1)}K`;
+        const valStr = p.revenue >= 1e6 ? `$${(p.revenue / 1e6).toFixed(2)}M` : `$${(p.revenue / 1e3).toFixed(1)}K`;
         const item = document.createElement('div');
         item.className = 'product-item';
         item.innerHTML = `
@@ -470,7 +486,7 @@ function renderTopProducts(products) {
 function renderInsights(insights) {
     const container = document.getElementById('ai-insights-list');
     container.innerHTML = '';
-    
+
     if (!insights || insights.length === 0) {
         container.innerHTML = `
             <div class="empty-state" style="padding: 24px 16px;">
@@ -484,7 +500,7 @@ function renderInsights(insights) {
         `;
         return;
     }
-    
+
     insights.forEach(ins => {
         const item = document.createElement('div');
         item.className = 'insight-item';
@@ -501,7 +517,7 @@ function renderCategoryDonut(categories) {
     const values = categories.map(c => c.revenue);
     const labels = categories.map(c => c.category);
     const total = values.reduce((a, b) => a + b, 0);
-    
+
     const trace = {
         values: values,
         labels: labels,
@@ -515,14 +531,19 @@ function renderCategoryDonut(categories) {
         textinfo: 'percent',
         hoverinfo: 'label+value+percent'
     };
-    
+
     const layout = {
         title: { text: 'Sales by Category', font: { color: '#FFFFFF', size: 14, family: 'Outfit' } },
         paper_bgcolor: 'rgba(0,0,0,0)',
         plot_bgcolor: 'rgba(0,0,0,0)',
         font: { color: '#A0A0B8', family: 'Outfit' },
+        hoverlabel: {
+            bgcolor: '#131322',
+            bordercolor: '#6B74FF',
+            font: { family: 'Outfit, sans-serif', size: 12, color: '#FFFFFF' }
+        },
         annotations: [{
-            text: `<span style='font-size:10px;color:var(--text-secondary);'>Total</span><br><b style='font-size:14px;color:#FFFFFF;'>$${(total/1e6).toFixed(2)}M</b>`,
+            text: `<span style='font-size:10px;color:var(--text-secondary);'>Total</span><br><b style='font-size:14px;color:#FFFFFF;'>$${(total / 1e6).toFixed(2)}M</b>`,
             x: 0.36, y: 0.5, // 0.36 is the exact center of [0, 0.72]
             showarrow: false
         }],
@@ -535,8 +556,8 @@ function renderCategoryDonut(categories) {
         margin: { l: 10, r: 10, t: 40, b: 10 },
         height: 280
     };
-    
-    Plotly.newPlot('chart-category-donut', [trace], layout, {displayModeBar: false});
+
+    Plotly.newPlot('chart-category-donut', [trace], layout, { displayModeBar: false });
 }
 
 
@@ -545,7 +566,7 @@ function renderCategoryDonut(categories) {
 function renderModelComparison(perf) {
     const tbody = document.querySelector('#model-comparison-table tbody');
     tbody.innerHTML = '';
-    
+
     perf.forEach(r => {
         const row = document.createElement('tr');
         if (r.is_best) {
@@ -571,25 +592,25 @@ function updateDataSummary(sum) {
 // Simulator computations
 function runSimulator() {
     if (!dashboardData) return;
-    
+
     const discVal = parseFloat(simDiscount.value);
     const mktgVal = parseFloat(simMarketing.value);
     const priceVal = parseFloat(simPrice.value);
-    
+
     const baseRev = dashboardData.kpis.revenue;
     const uniqueMonths = new Set(dashboardData.trend.map(t => t.date.substring(0, 7))).size;
     const baseMonthly = baseRev / (uniqueMonths || 1);
-    
+
     // Simulate multipliers
-    const discMult = 1.0 + (0.15 - discVal/100) * 0.4;
-    const mktgMult = 1.0 + Math.log1p((mktgVal*1000 - 50000)/50000) * 0.15;
-    const priceMult = 1.0 - (priceVal/100.0) * 0.8;
-    
+    const discMult = 1.0 + (0.15 - discVal / 100) * 0.4;
+    const mktgMult = 1.0 + Math.log1p((mktgVal * 1000 - 50000) / 50000) * 0.15;
+    const priceMult = 1.0 - (priceVal / 100.0) * 0.8;
+
     const predictedMonthly = baseMonthly * disc_multiplier(discVal) * mktg_multiplier(mktgVal) * price_multiplier(priceVal);
     const growth = ((predictedMonthly - baseMonthly) / baseMonthly * 100);
-    
+
     simPredictedVal.textContent = `$${(predictedMonthly / 1e3).toFixed(1)}K`;
-    
+
     if (growth >= 0) {
         simPredictedChange.className = 'sim-result-change text-success';
         simPredictedChange.textContent = `▲ +${growth.toFixed(1)}% change`;
@@ -601,13 +622,13 @@ function runSimulator() {
 
 // Helper multiplier functions
 function disc_multiplier(disc) {
-    return 1.0 + (0.15 - disc/100.0) * 0.4;
+    return 1.0 + (0.15 - disc / 100.0) * 0.4;
 }
 function mktg_multiplier(mktg) {
-    return 1.0 + Math.log1p((mktg*1000 - 50000)/50000) * 0.15;
+    return 1.0 + Math.log1p((mktg * 1000 - 50000) / 50000) * 0.15;
 }
 function price_multiplier(price) {
-    return 1.0 - (price/100.0) * 0.8;
+    return 1.0 - (price / 100.0) * 0.8;
 }
 
 // FORECASTING PANEL TAB LOGIC
@@ -629,47 +650,47 @@ fcHorizon.addEventListener('input', (e) => {
 btnRunForecast.addEventListener('click', async () => {
     fcLoading.style.display = 'block';
     fcResultsContainer.style.display = 'none';
-    
+
     const requestData = {
         ...activeFilters,
         model_choice: fcAlgorithm.value,
         horizon: parseInt(fcHorizon.value)
     };
-    
+
     try {
         const response = await fetch('/api/forecast', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(requestData)
         });
-        
+
         if (!response.ok) {
             const err = await response.json();
             alert(`Forecasting Error: ${err.detail || 'Failed to train models'}`);
             fcLoading.style.display = 'none';
             return;
         }
-        
+
         const data = await response.json();
         fcLoading.style.display = 'none';
         fcResultsContainer.style.display = 'block';
-        
+
         // Show metrics if regression-based
         if (data.metrics) {
             fcMetricsGrid.style.display = 'grid';
-            document.getElementById('fc-metric-mae').textContent = `$${data.metrics.MAE.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
-            document.getElementById('fc-metric-rmse').textContent = `$${data.metrics.RMSE.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+            document.getElementById('fc-metric-mae').textContent = `$${data.metrics.MAE.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById('fc-metric-rmse').textContent = `$${data.metrics.RMSE.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
             document.getElementById('fc-metric-r2').textContent = data.metrics.R2.toFixed(4);
         } else {
             fcMetricsGrid.style.display = 'none';
         }
-        
+
         // Render plot
         renderForecastPlot(data.historical, data.forecasted, data.model_name);
-        
+
         // Render predictions table
         renderForecastTable(data.forecasted);
-        
+
         // Prepare download CSV
         prepareForecastDownload(data.forecasted, data.model_name);
     } catch (e) {
@@ -683,14 +704,14 @@ btnRunForecast.addEventListener('click', async () => {
 function renderForecastPlot(hist, fc, modelName) {
     const histDates = hist.map(h => h.date);
     const histVals = hist.map(h => h.value);
-    
+
     const fcDates = fc.map(f => f.date);
     const fcVals = fc.map(f => f.yhat);
     const fcLower = fc.map(f => f.yhat_lower);
     const fcUpper = fc.map(f => f.yhat_upper);
-    
+
     const traces = [];
-    
+
     // Historical Line
     traces.push({
         x: histDates,
@@ -699,19 +720,25 @@ function renderForecastPlot(hist, fc, modelName) {
         mode: 'lines+markers',
         name: 'Historical Sales',
         line: { color: '#E0E0E6', width: 2 },
-        marker: { size: 4 }
+        marker: { size: 5, color: '#E0E0E6' },
+        hoverlabel: {
+            bgcolor: '#131322',
+            bordercolor: '#6B74FF',
+            font: { color: '#FFFFFF', family: 'Outfit, sans-serif', size: 12 }
+        },
+        hovertemplate: '<b>%{x}</b><br>Historical Sales: <b>$%{y:,.2f}</b><extra></extra>'
     });
-    
+
     if (fcDates.length > 0) {
         // Connect historical and predicted line
         const lastHistDate = histDates[histDates.length - 1];
         const lastHistVal = histVals[histVals.length - 1];
-        
+
         const connDates = [lastHistDate, ...fcDates];
         const connVals = [lastHistVal, ...fcVals];
         const connLower = [lastHistVal, ...fcLower];
         const connUpper = [lastHistVal, ...fcUpper];
-        
+
         // 95% Confidence Band
         traces.push({
             x: [...connDates, ...[...connDates].reverse()],
@@ -722,7 +749,7 @@ function renderForecastPlot(hist, fc, modelName) {
             hoverinfo: 'skip',
             name: '95% Confidence Interval'
         });
-        
+
         // Prediction Line
         traces.push({
             x: connDates,
@@ -731,37 +758,48 @@ function renderForecastPlot(hist, fc, modelName) {
             mode: 'lines+markers',
             name: `${modelName} Forecast`,
             line: { color: '#636EFA', width: 3, dash: 'dash' },
-            marker: { size: 6, color: '#00CC96' }
+            marker: { size: 6, color: '#00CC96' },
+            hoverlabel: {
+                bgcolor: '#131322',
+                bordercolor: '#00CC96',
+                font: { color: '#FFFFFF', family: 'Outfit, sans-serif', size: 12 }
+            },
+            hovertemplate: '<b>%{x}</b><br>' + modelName + ': <b>$%{y:,.2f}</b><extra></extra>'
         });
     }
-    
+
     const layout = {
         title: { text: `Sales Forecast Projections using ${modelName}`, font: { color: '#FFFFFF', size: 16, family: 'Outfit' } },
         paper_bgcolor: 'rgba(0,0,0,0)',
         plot_bgcolor: 'rgba(0,0,0,0)',
         font: { color: '#E0E0E6', family: 'Outfit' },
-        xaxis: { gridcolor: '#2B2B3D', linecolor: '#2B2B3D', tickfont: {color:'#8C8C9A'} },
-        yaxis: { gridcolor: '#2B2B3D', linecolor: '#2B2B3D', tickfont: {color:'#8C8C9A'} },
+        hoverlabel: {
+            bgcolor: '#131322',
+            bordercolor: '#6B74FF',
+            font: { family: 'Outfit, sans-serif', size: 12, color: '#FFFFFF' }
+        },
+        xaxis: { gridcolor: '#2B2B3D', linecolor: '#2B2B3D', tickfont: { color: '#8C8C9A' } },
+        yaxis: { gridcolor: '#2B2B3D', linecolor: '#2B2B3D', tickfont: { color: '#8C8C9A' } },
         margin: { l: 40, r: 20, t: 40, b: 30 },
         height: 380
     };
-    
-    Plotly.newPlot('chart-fc-results', traces, layout, {displayModeBar: false});
+
+    Plotly.newPlot('chart-fc-results', traces, layout, { displayModeBar: false });
 }
 
 // Populates forecast values summary
 function renderForecastTable(fc) {
     const tbody = document.querySelector('#forecast-summary-table tbody');
     tbody.innerHTML = '';
-    
+
     fc.forEach(row => {
         const tr = document.createElement('tr');
         const fMonth = new Date(row.date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
         tr.innerHTML = `
             <td>${fMonth}</td>
-            <td>$${row.yhat.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
-            <td>$${row.yhat_lower.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
-            <td>$${row.yhat_upper.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+            <td>$${row.yhat.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+            <td>$${row.yhat_lower.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+            <td>$${row.yhat_upper.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
         `;
         tbody.appendChild(tr);
     });
@@ -774,7 +812,7 @@ function prepareForecastDownload(fc, modelName) {
         const fMonth = new Date(row.date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
         csv += `"${fMonth}",${row.yhat},${row.yhat_lower},${row.yhat_upper}\n`;
     });
-    
+
     generatedForecastCsvData = csv;
     generatedForecastFilename = `sales_forecast_${modelName.toLowerCase().replace(/\s+/g, '_')}.csv`;
 }
@@ -795,7 +833,7 @@ btnDownloadForecast.addEventListener('click', () => {
 // PRODUCTS TABLE PAGE LISTING
 async function loadProductsPanel() {
     if (!dashboardData) return;
-    
+
     try {
         const response = await fetch('/api/dashboard', {
             method: 'POST',
@@ -803,10 +841,10 @@ async function loadProductsPanel() {
             body: JSON.stringify(activeFilters)
         });
         const data = await response.json();
-        
+
         const tbody = document.querySelector('#full-products-table tbody');
         tbody.innerHTML = '';
-        
+
         // Use aggregated products listings for display
         data.products.forEach(p => {
             const tr = document.createElement('tr');
@@ -818,13 +856,13 @@ async function loadProductsPanel() {
             `;
             tbody.appendChild(tr);
         });
-    } catch(e) {
+    } catch (e) {
         console.error('Error loading products list:', e);
     }
 }
 
 function valStr(val) {
-    return val.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+    return val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 // ANALYTICS PANEL LOGIC
@@ -840,7 +878,7 @@ async function loadAnalyticsPanel() {
             console.error(data.error);
             return;
         }
-        
+
         renderCategoryTrend(data.category_trend);
         renderPriceElasticity(data.elasticity);
         renderDiscountPerformance(data.discount_performance);
@@ -858,20 +896,25 @@ function renderCategoryTrend(catTrend) {
             type: 'bar'
         };
     });
-    
+
     const layout = {
         title: { text: 'Monthly Sales Contribution by Category', font: { color: '#FFFFFF', size: 14, family: 'Outfit' } },
         barmode: 'stack',
         paper_bgcolor: 'rgba(0,0,0,0)',
         plot_bgcolor: 'rgba(0,0,0,0)',
         font: { color: '#E0E0E6', family: 'Outfit' },
-        xaxis: { gridcolor: '#2B2B3D', linecolor: '#2B2B3D', tickfont: {color:'#8C8C9A'} },
-        yaxis: { gridcolor: '#2B2B3D', linecolor: '#2B2B3D', tickfont: {color:'#8C8C9A'} },
+        hoverlabel: {
+            bgcolor: '#131322',
+            bordercolor: '#6B74FF',
+            font: { family: 'Outfit, sans-serif', size: 12, color: '#FFFFFF' }
+        },
+        xaxis: { gridcolor: '#2B2B3D', linecolor: '#2B2B3D', tickfont: { color: '#8C8C9A' } },
+        yaxis: { gridcolor: '#2B2B3D', linecolor: '#2B2B3D', tickfont: { color: '#8C8C9A' } },
         margin: { l: 50, r: 20, t: 40, b: 30 },
         height: 280
     };
-    
-    Plotly.newPlot('chart-category-trend', traces, layout, {displayModeBar: false});
+
+    Plotly.newPlot('chart-category-trend', traces, layout, { displayModeBar: false });
 }
 
 function renderPriceElasticity(elasticity) {
@@ -881,7 +924,7 @@ function renderPriceElasticity(elasticity) {
         if (!catGroups[item.category]) catGroups[item.category] = [];
         catGroups[item.category].push(item);
     });
-    
+
     Object.keys(catGroups).forEach(cat => {
         const group = catGroups[cat];
         traces.push({
@@ -894,26 +937,31 @@ function renderPriceElasticity(elasticity) {
             marker: { size: 8 }
         });
     });
-    
+
     const layout = {
         title: { text: 'Price Elasticity (Price vs Units Sold)', font: { color: '#FFFFFF', size: 14, family: 'Outfit' } },
         paper_bgcolor: 'rgba(0,0,0,0)',
         plot_bgcolor: 'rgba(0,0,0,0)',
         font: { color: '#E0E0E6', family: 'Outfit' },
-        xaxis: { title: { text: 'Price Per Unit ($)', font: { size: 11 } }, gridcolor: '#2B2B3D', linecolor: '#2B2B3D', tickfont: {color:'#8C8C9A'} },
-        yaxis: { title: { text: 'Total Units Sold', font: { size: 11 } }, gridcolor: '#2B2B3D', linecolor: '#2B2B3D', tickfont: {color:'#8C8C9A'} },
+        hoverlabel: {
+            bgcolor: '#131322',
+            bordercolor: '#6B74FF',
+            font: { family: 'Outfit, sans-serif', size: 12, color: '#FFFFFF' }
+        },
+        xaxis: { title: { text: 'Price Per Unit ($)', font: { size: 11 } }, gridcolor: '#2B2B3D', linecolor: '#2B2B3D', tickfont: { color: '#8C8C9A' } },
+        yaxis: { title: { text: 'Total Units Sold', font: { size: 11 } }, gridcolor: '#2B2B3D', linecolor: '#2B2B3D', tickfont: { color: '#8C8C9A' } },
         margin: { l: 50, r: 20, t: 40, b: 40 },
         height: 280
     };
-    
-    Plotly.newPlot('chart-price-elasticity', traces, layout, {displayModeBar: false});
+
+    Plotly.newPlot('chart-price-elasticity', traces, layout, { displayModeBar: false });
 }
 
 function renderDiscountPerformance(discountData) {
     const discounts = discountData.map(d => `${d.discount.toFixed(0)}%`);
     const avgUnits = discountData.map(d => d.avg_units);
     const profit = discountData.map(d => d.profit);
-    
+
     const trace1 = {
         x: discounts,
         y: avgUnits,
@@ -929,18 +977,23 @@ function renderDiscountPerformance(discountData) {
         yaxis: 'y2',
         marker: { color: '#00CC96' }
     };
-    
+
     const layout = {
         title: { text: 'Discount Impact on Volume vs Profitability', font: { color: '#FFFFFF', size: 14, family: 'Outfit' } },
         paper_bgcolor: 'rgba(0,0,0,0)',
         plot_bgcolor: 'rgba(0,0,0,0)',
         font: { color: '#E0E0E6', family: 'Outfit' },
-        xaxis: { gridcolor: '#2B2B3D', linecolor: '#2B2B3D', tickfont: {color:'#8C8C9A'} },
-        yaxis: { title: 'Avg Units Sold', titlefont: {color: '#636EFA'}, tickfont: {color:'#8C8C9A'}, gridcolor: '#2B2B3D' },
+        hoverlabel: {
+            bgcolor: '#131322',
+            bordercolor: '#6B74FF',
+            font: { family: 'Outfit, sans-serif', size: 12, color: '#FFFFFF' }
+        },
+        xaxis: { gridcolor: '#2B2B3D', linecolor: '#2B2B3D', tickfont: { color: '#8C8C9A' } },
+        yaxis: { title: 'Avg Units Sold', titlefont: { color: '#636EFA' }, tickfont: { color: '#8C8C9A' }, gridcolor: '#2B2B3D' },
         yaxis2: {
             title: 'Total Profit ($)',
-            titlefont: {color: '#00CC96'},
-            tickfont: {color:'#8C8C9A'},
+            titlefont: { color: '#00CC96' },
+            tickfont: { color: '#8C8C9A' },
             overlaying: 'y',
             side: 'right',
             gridcolor: 'rgba(0,0,0,0)'
@@ -949,8 +1002,8 @@ function renderDiscountPerformance(discountData) {
         margin: { l: 50, r: 80, t: 45, b: 30 },
         height: 280
     };
-    
-    Plotly.newPlot('chart-discount-performance', [trace1, trace2], layout, {displayModeBar: false});
+
+    Plotly.newPlot('chart-discount-performance', [trace1, trace2], layout, { displayModeBar: false });
 }
 
 // Reports Tab Handler
@@ -962,10 +1015,10 @@ function initReportsPanel() {
     const reportContainer = document.getElementById('report-content-container');
     const reportTitleDisplay = document.getElementById('report-title-display');
     const reportBodyDisplay = document.getElementById('report-body-display');
-    
+
     const btnDownloadTxt = document.getElementById('btn-download-report-txt');
     const btnDownloadHtml = document.getElementById('btn-download-report-html');
-    
+
     // Clear display initially if not loaded
     if (!currentReportHtml) {
         reportContainer.style.display = 'none';
@@ -975,31 +1028,31 @@ function initReportsPanel() {
     btnGenerate.onclick = async () => {
         reportLoading.style.display = 'flex';
         reportContainer.style.display = 'none';
-        
+
         const reqPayload = {
             ...activeFilters,
             report_type: reportTypeSelect.value
         };
-        
+
         try {
             const resp = await fetch('/api/report', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(reqPayload)
             });
-            
+
             const data = await resp.json();
             reportLoading.style.display = 'none';
-            
+
             if (data.error) {
                 if (window.showToast) showToast(data.error, 'error');
                 return;
             }
-            
+
             if (data.success) {
                 currentReportHtml = data.report_html;
                 reportContainer.style.display = 'block';
-                
+
                 // Map select value to readable title
                 const titleMap = {
                     'executive': 'Executive Sales & AI Performance Report',
@@ -1007,10 +1060,10 @@ function initReportsPanel() {
                     'products': 'Product Catalogue Analysis & Revenue Report'
                 };
                 reportTitleDisplay.textContent = titleMap[reportTypeSelect.value] || 'Sales Report';
-                
+
                 // Display report content
                 reportBodyDisplay.innerHTML = currentReportHtml;
-                
+
                 if (window.showToast) showToast('AI Report compiled successfully.', 'success');
             }
         } catch (err) {
@@ -1027,7 +1080,7 @@ function initReportsPanel() {
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = currentReportHtml;
         const textContent = tempDiv.textContent || tempDiv.innerText || '';
-        
+
         const blob = new Blob([textContent], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');

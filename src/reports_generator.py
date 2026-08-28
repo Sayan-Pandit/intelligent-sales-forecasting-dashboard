@@ -51,7 +51,8 @@ Requirements for Output:
 4. Highlight important numbers, metrics, or growth trends using inline styles (e.g., <b style='color:#6B74FF;'>...</b> or <b style='color:#00D4A0;'>...</b>). Use professional typography spacing and structure (e.g., <p>, <ul>, <li>, <h4>).
 5. Ensure the tone is corporate, analytical, and highly structured.
 """
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={api_key}"
+            model_name = os.environ.get("GEMINI_MODEL", "gemini-3.6-flash")
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
             headers = {"Content-Type": "application/json"}
             payload = {
                 "contents": [{"parts": [{"text": prompt}]}],
