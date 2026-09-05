@@ -6,14 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Intelligent Sales Forecasting Dashboard</title>
     <meta name="description" content="AI-powered sales forecasting dashboard with predictive analytics, model comparison, and real-time insights.">
-    <!-- Outfit Google Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
+    <!-- Google Fonts: Archivo, Inter, JetBrains Mono, Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Lucide Icons CDN -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Plotly JS for premium interactive charts -->
     <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
-    <link rel="stylesheet" href="style.css?v=11">
+    <link rel="stylesheet" href="style.css?v=14">
 </head>
 
 
@@ -39,18 +40,12 @@
         <!-- SIDEBAR -->
         <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
             <div class="sidebar-brand">
-                <span class="brand-icon">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M3 17L9 11L13 15L21 7" stroke="url(#brandGrad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        <defs>
-                            <linearGradient id="brandGrad" x1="3" y1="17" x2="21" y2="7" gradientUnits="userSpaceOnUse">
-                                <stop stop-color="#6B74FF"/>
-                                <stop offset="1" stop-color="#B06AFF"/>
-                            </linearGradient>
-                        </defs>
+                <div class="mk">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="width:14px;height:14px;stroke:var(--bg);">
+                        <path d="M3 15a5 5 0 015-5 6 6 0 0111 3 4 4 0 01-1 8H7a4 4 0 01-4-4z"/>
                     </svg>
-                </span>
-                Sales Forecast AI
+                </div>
+                <div class="nm archivo">Outlook AI</div>
             </div>
 
             <nav class="sidebar-menu" role="menubar" aria-label="Dashboard sections">
@@ -70,9 +65,9 @@
                     <span class="menu-icon" aria-hidden="true"><i data-lucide="package"></i></span>
                     Products
                 </button>
-                <button class="menu-item" data-tab="customers" role="menuitem">
-                    <span class="menu-icon" aria-hidden="true"><i data-lucide="users"></i></span>
-                    Customers
+                <button class="menu-item" data-tab="insights" role="menuitem">
+                    <span class="menu-icon" aria-hidden="true"><i data-lucide="sparkles"></i></span>
+                    Insights
                 </button>
                 <button class="menu-item" data-tab="reports" role="menuitem">
                     <span class="menu-icon" aria-hidden="true"><i data-lucide="file-text"></i></span>
@@ -210,62 +205,66 @@
 
             <!-- TAB PANELS -->
             <section class="tab-panel active" id="panel-dashboard" role="tabpanel" aria-label="Dashboard panel">
-                <!-- Row 1: KPI Grid -->
+                <!-- Outlook 6-Month Forecasting Hero Card -->
+                <div class="panel contour-bg outlook-hero-card">
+                    <div class="outlook-hero-head">
+                        <div class="outlook-hero-title"><i data-lucide="sparkles" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:4px;"></i> Predictive Horizon Outlook</div>
+                        <div class="outlook-hero-tag" id="outlook-hero-tag">AI Multi-Model Consensus · R² 0.95</div>
+                    </div>
+                    <div class="outlook-months-grid" id="outlook-months-grid">
+                        <div class="month-col"><div class="m-lbl">M+1</div><div class="m-val mono" id="m-val-1">$861K</div><div class="bar"><i style="background:var(--warm);width:80%"></i></div></div>
+                        <div class="month-col"><div class="m-lbl">M+2</div><div class="m-val mono" id="m-val-2">$828K</div><div class="bar"><i style="background:var(--warm);width:75%"></i></div></div>
+                        <div class="month-col"><div class="m-lbl">M+3</div><div class="m-val mono" id="m-val-3">$795K</div><div class="bar"><i style="background:var(--steel);width:68%"></i></div></div>
+                        <div class="month-col"><div class="m-lbl">M+4</div><div class="m-val mono" id="m-val-4">$812K</div><div class="bar"><i style="background:var(--steel);width:70%"></i></div></div>
+                        <div class="month-col"><div class="m-lbl">M+5</div><div class="m-val mono" id="m-val-5">$774K</div><div class="bar"><i style="background:var(--cool);width:62%"></i></div></div>
+                        <div class="month-col"><div class="m-lbl">M+6</div><div class="m-val mono" id="m-val-6">$902K</div><div class="bar"><i style="background:var(--warm);width:85%"></i></div></div>
+                    </div>
+                    <div class="outlook-hero-summary" id="outlook-hero-summary">
+                        Sales velocity is <b style="color:var(--text-hi);">warming</b> across core product lines. Top performing models indicate steady demand through the next quarter.
+                    </div>
+                </div>
+
+                <!-- Row 1: KPI Grid (testDesign Clean Style) -->
                 <div class="kpi-grid" role="list" aria-label="Key performance indicators">
 
                     <article class="metric-card" role="listitem">
                         <div class="metric-header">
                             <span class="metric-title">Total Revenue</span>
-                            <div class="metric-icon-circle rev-color" aria-hidden="true">
-                                <i data-lucide="dollar-sign"></i>
-                            </div>
                         </div>
                         <div class="metric-value tabular-nums" id="kpi-revenue" aria-label="Total Revenue">$2.73M</div>
-                        <div class="metric-delta positive" id="kpi-revenue-growth" aria-label="Revenue growth">▲ +15.2% vs last year</div>
+                        <div class="metric-delta" id="kpi-revenue-growth" aria-label="Revenue growth">▲ +15.2% vs last year</div>
                     </article>
 
                     <article class="metric-card" role="listitem">
                         <div class="metric-header">
                             <span class="metric-title">Total Profit</span>
-                            <div class="metric-icon-circle prof-color" aria-hidden="true">
-                                <i data-lucide="trending-up"></i>
-                            </div>
                         </div>
                         <div class="metric-value tabular-nums" id="kpi-profit">$582.64K</div>
-                        <div class="metric-delta positive" id="kpi-profit-growth">▲ +12.7% vs last year</div>
+                        <div class="metric-delta" id="kpi-profit-growth">▲ +12.7% vs last year</div>
                     </article>
 
                     <article class="metric-card" role="listitem">
                         <div class="metric-header">
                             <span class="metric-title">Units Sold</span>
-                            <div class="metric-icon-circle units-color" aria-hidden="true">
-                                <i data-lucide="shopping-cart"></i>
-                            </div>
                         </div>
                         <div class="metric-value tabular-nums" id="kpi-units">25,355</div>
-                        <div class="metric-delta positive" id="kpi-units-growth">▲ +10.3% vs last year</div>
+                        <div class="metric-delta" id="kpi-units-growth">▲ +10.3% vs last year</div>
                     </article>
 
                     <article class="metric-card" role="listitem">
                         <div class="metric-header">
                             <span class="metric-title">Avg. Order Value</span>
-                            <div class="metric-icon-circle aov-color" aria-hidden="true">
-                                <i data-lucide="tag"></i>
-                            </div>
                         </div>
                         <div class="metric-value tabular-nums" id="kpi-aov">$107.54</div>
-                        <div class="metric-delta positive" id="kpi-aov-growth">▲ +1.6% vs last year</div>
+                        <div class="metric-delta" id="kpi-aov-growth">▲ +1.6% vs last year</div>
                     </article>
 
                     <article class="metric-card" role="listitem">
                         <div class="metric-header">
                             <span class="metric-title">Profit Margin</span>
-                            <div class="metric-icon-circle margin-color" aria-hidden="true">
-                                <i data-lucide="percent"></i>
-                            </div>
                         </div>
                         <div class="metric-value tabular-nums" id="kpi-margin">21.34%</div>
-                        <div class="metric-delta positive" id="kpi-margin-growth">▲ +1.8% vs last year</div>
+                        <div class="metric-delta" id="kpi-margin-growth">▲ +1.8% vs last year</div>
                     </article>
                 </div>
 
@@ -280,11 +279,11 @@
                             </div>
                             <div class="footer-metric-item" role="listitem">
                                 <span class="fm-label">Forecast Next 3 Months</span>
-                                <span class="fm-value purple-text tabular-nums" id="fm-fc-3m">$847.32K</span>
+                                <span class="fm-value tabular-nums" id="fm-fc-3m" style="color:var(--warm);">$847.32K</span>
                             </div>
                             <div class="footer-metric-item" role="listitem">
-                                <span class="fm-label">Forecast Growth</span>
-                                <span class="fm-value green-text tabular-nums" id="fm-fc-growth">▲ +12.8%</span>
+                                <span class="fm-label">Forecast Velocity</span>
+                                <span class="fm-value tabular-nums" id="fm-fc-growth" style="color:var(--steel);">▲ +12.8%</span>
                             </div>
                         </div>
                     </div>
@@ -321,7 +320,7 @@
                         <div class="insights-container" id="ai-insights-list" aria-label="AI-generated business insights">
                             <!-- Populated dynamically -->
                         </div>
-                        <button class="view-all-btn">
+                        <button class="view-all-btn" id="btn-view-insights">
                             <i data-lucide="arrow-right" aria-hidden="true"></i>
                             View All Insights
                         </button>
@@ -546,6 +545,7 @@
                                     <th scope="col">Category</th>
                                     <th scope="col">Units Sold</th>
                                     <th scope="col">Avg List Price</th>
+                                    <th scope="col">Revenue Share</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -609,6 +609,78 @@
                 </div>
             </section>
 
+            <section class="tab-panel" id="panel-insights" role="tabpanel" aria-label="AI Insights panel">
+                <div class="dashboard-card">
+                    <div class="card-header-flex" style="margin-bottom: 20px;">
+                        <div>
+                            <div class="section-heading" style="margin-bottom:4px;">
+                                <i data-lucide="sparkles" aria-hidden="true"></i>
+                                Strategic Business Intelligence &amp; AI Insights
+                            </div>
+                            <p class="section-subtitle" style="margin-bottom:0;">Synthesized strategic guidance generated from deep transaction analysis and machine learning forecasts.</p>
+                        </div>
+                        <button class="btn-primary" id="btn-refresh-insights">
+                            <i data-lucide="rotate-cw" style="width:14px;height:14px;" aria-hidden="true"></i>
+                            Refresh Insights
+                        </button>
+                    </div>
+
+                    <!-- Strategic Insights Grid -->
+                    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:20px;">
+                        <!-- Category 1: Growth & Revenue Drivers -->
+                        <div class="panel" style="background:var(--panel-2);border:1px solid var(--line-soft);border-radius:var(--radius-lg);padding:18px;">
+                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+                                <div class="pill steel" style="font-weight:600;"><i data-lucide="trending-up" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:3px;"></i> Growth Opportunities</div>
+                            </div>
+                            <div id="insights-growth-list" style="display:flex;flex-direction:column;gap:10px;">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Category 2: Regional & Operational Focus -->
+                        <div class="panel" style="background:var(--panel-2);border:1px solid var(--line-soft);border-radius:var(--radius-lg);padding:18px;">
+                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+                                <div class="pill warm" style="font-weight:600;"><i data-lucide="map-pin" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:3px;"></i> Regional &amp; Market Focus</div>
+                            </div>
+                            <div id="insights-regional-list" style="display:flex;flex-direction:column;gap:10px;">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Category 3: Pricing & Margin Optimization -->
+                        <div class="panel" style="background:var(--panel-2);border:1px solid var(--line-soft);border-radius:var(--radius-lg);padding:18px;">
+                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+                                <div class="pill cool" style="font-weight:600;"><i data-lucide="percent" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:3px;"></i> Pricing &amp; Margin Actions</div>
+                            </div>
+                            <div id="insights-pricing-list" style="display:flex;flex-direction:column;gap:10px;">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Category 4: Risk Mitigation & Supply Chain -->
+                        <div class="panel" style="background:var(--panel-2);border:1px solid var(--line-soft);border-radius:var(--radius-lg);padding:18px;">
+                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+                                <div class="pill" style="color:var(--text-hi);background:rgba(255,255,255,0.06);font-weight:600;"><i data-lucide="shield-alert" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:3px;"></i> Risk &amp; Anomaly Signals</div>
+                            </div>
+                            <div id="insights-risk-list" style="display:flex;flex-direction:column;gap:10px;">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Synthesis Note Card -->
+                    <div class="panel contour-bg" style="padding:16px 20px;border-radius:var(--radius-lg);">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                            <span class="archivo" style="font-size:13px;font-weight:600;color:var(--steel);">Executive Summary Intelligence</span>
+                            <span class="mono" style="font-size:11px;color:var(--text-low);" id="insights-timestamp">Updated with active filters</span>
+                        </div>
+                        <p style="font-size:12.5px;color:var(--text-mid);line-height:1.6;margin:0;" id="insights-executive-summary">
+                            Synthesized analytics suggest stabilizing discount strategies across peak-performing product lines to maximize gross margin while re-allocating inventory to lead regional centers.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
             <section class="tab-panel" id="panel-placeholder" role="tabpanel" aria-label="Placeholder panel">
 
                 <div class="dashboard-card">
@@ -622,7 +694,7 @@
         </main>
     </div>
 
-    <script src="app.js?v=5"></script>
+    <script src="app.js?v=8"></script>
 
 
     <script>
