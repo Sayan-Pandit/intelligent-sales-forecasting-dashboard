@@ -313,12 +313,12 @@ def map_and_clean_data(df, date_col, sales_col):
     # Product_Category
     cat_col = None
     for i, col_low in enumerate(cols_low):
-        if col_low in ['product_category', 'category', 'class', 'department', 'dept']:
+        if col_low in ['product_category', 'category', 'class', 'department', 'dept', 'productline', 'product_line', 'segment']:
             cat_col = df.columns[i]
             break
     if not cat_col:
         for i, col_low in enumerate(cols_low):
-            if 'category' in col_low or 'dept' in col_low or 'class' in col_low:
+            if 'category' in col_low or 'dept' in col_low or 'class' in col_low or 'productline' in col_low or 'segment' in col_low:
                 cat_col = df.columns[i]
                 break
     if cat_col and cat_col not in ['Date', 'Sales_Revenue', 'Units_Sold', 'Discount', 'Price_Per_Unit', 'Region']:
@@ -337,8 +337,10 @@ def map_and_clean_data(df, date_col, sales_col):
             if 'product' in col_low or 'item' in col_low or 'name' in col_low:
                 prod_col = df.columns[i]
                 break
-    if prod_col and prod_col not in ['Date', 'Sales_Revenue', 'Units_Sold', 'Discount', 'Price_Per_Unit', 'Region', 'Product_Category']:
+    if prod_col and prod_col not in ['Date', 'Sales_Revenue', 'Units_Sold', 'Discount', 'Price_Per_Unit', 'Region']:
         df['Product'] = df[prod_col].astype(str).fillna('Standard Product')
+    elif cat_col and cat_col not in ['Date', 'Sales_Revenue', 'Units_Sold', 'Discount', 'Price_Per_Unit', 'Region']:
+        df['Product'] = df[cat_col].astype(str).fillna('Standard Product')
     else:
         df['Product'] = 'Standard Product'
         

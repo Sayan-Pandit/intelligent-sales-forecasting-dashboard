@@ -3,18 +3,18 @@ import plotly.graph_objects as go
 import pandas as pd
 import numpy as np
 
-# Set standard design system color palette
+# Set standard design system color palette (harmonized with web frontend)
 COLORS = {
-    'primary': '#636EFA',      # Deep Electric Blue
-    'secondary': '#AB63FA',    # Electric Purple
-    'accent': '#00CC96',       # Neon Green
-    'contrast': '#AB63FA',     # Purple
-    'warning': '#EF553B',      # Coral Red
+    'primary': '#6B74FF',      # Electric Indigo
+    'secondary': '#B06AFF',    # Electric Purple
+    'accent': '#00D4A0',       # Mint Green
+    'contrast': '#B06AFF',     # Purple
+    'warning': '#FFB347',      # Amber Warning
     'background': '#0F0F1A',   # Deep Navy Black
     'card_bg': 'rgba(30, 30, 46, 0.45)', # Glassmorphic card
-    'text': '#E0E0E6',         # Off-white
-    'text_muted': '#8C8C9A',   # Muted grey
-    'grid': '#2B2B3D'          # Grid lines
+    'text': '#F2F2F8',         # Off-white (WCAG AA)
+    'text_muted': '#A0A0B8',   # Muted slate (WCAG AA)
+    'grid': 'rgba(255, 255, 255, 0.08)'  # Subtle grid lines
 }
 
 def apply_layout_theme(fig):
@@ -57,7 +57,7 @@ def apply_layout_theme(fig):
     )
     return fig
 
-def plot_sparkline(series, color='#AB63FA'):
+def plot_sparkline(series, color='#B06AFF'):
     """
     Plots a tiny, clean sparkline with no axes or margins.
     """
@@ -68,7 +68,7 @@ def plot_sparkline(series, color='#AB63FA'):
         mode='lines',
         line=dict(color=color, width=2.5),
         fill='tozeroy',
-        fillcolor='rgba(171, 99, 250, 0.12)' if color == '#AB63FA' else 'rgba(99, 110, 250, 0.12)',
+        fillcolor='rgba(176, 106, 255, 0.15)' if color == '#B06AFF' else 'rgba(107, 116, 255, 0.15)',
         hoverinfo='skip'
     ))
     fig.update_layout(
@@ -218,18 +218,21 @@ def plot_regional_analysis(df, region_col='Region'):
             })
             
     map_df = pd.DataFrame(rows)
-    
     fig = px.choropleth(
         map_df,
         locations="Country",
         color="Sales",
         hover_name="Region",
         color_continuous_scale=[
-            [0.0, '#121225'],
-            [0.5, '#636EFA'],
-            [1.0, '#AB63FA']
+            [0.0, '#262A54'],
+            [0.5, '#6B74FF'],
+            [1.0, '#B06AFF']
         ],
         labels={'Sales': 'Revenue'}
+    )
+    fig.update_traces(
+        marker_line_color='rgba(255, 255, 255, 0.18)',
+        marker_line_width=0.6
     )
     
     fig.update_layout(
@@ -238,14 +241,16 @@ def plot_regional_analysis(df, region_col='Region'):
         geo=dict(
             showframe=False,
             showcoastlines=True,
-            coastlinecolor=COLORS['grid'],
+            coastlinecolor='rgba(255, 255, 255, 0.12)',
+            showcountries=True,
+            countrycolor='rgba(255, 255, 255, 0.12)',
             projection_type='equirectangular',
-            backgroundcolor='rgba(0,0,0,0)',
+            bgcolor='rgba(0,0,0,0)',
             landcolor='#16162B',
             lakecolor='#0F0F1A',
             showland=True,
             showlakes=True,
-            subunitcolor=COLORS['grid']
+            subunitcolor='rgba(255, 255, 255, 0.08)'
         ),
         margin=dict(l=0, r=0, t=40, b=0),
         height=320
@@ -377,7 +382,7 @@ def plot_forecast(historical_df, forecast_df, model_name):
             x=pd.concat([future_forecast_conn['ds'], future_forecast_conn['ds'].iloc[::-1]]),
             y=pd.concat([future_forecast_conn['yhat_upper'], future_forecast_conn['yhat_lower'].iloc[::-1]]),
             fill='toself',
-            fillcolor='rgba(99, 110, 250, 0.15)',
+            fillcolor='rgba(107, 116, 255, 0.18)',
             line=dict(color='rgba(255,255,255,0)'),
             hoverinfo="skip",
             showlegend=True,

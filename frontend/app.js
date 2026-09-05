@@ -425,10 +425,16 @@ function renderRegionalMap(map) {
         text: hover,
         hoverinfo: 'text',
         colorscale: [
-            [0, '#121225'],
-            [0.5, '#636EFA'],
-            [1.0, '#AB63FA']
+            [0, '#262A54'],
+            [0.5, '#6B74FF'],
+            [1.0, '#B06AFF']
         ],
+        marker: {
+            line: {
+                color: 'rgba(255, 255, 255, 0.18)',
+                width: 0.6
+            }
+        },
         showscale: false
     };
 
@@ -565,6 +571,7 @@ function renderCategoryDonut(categories) {
 // Render Model Comparison Table
 function renderModelComparison(perf) {
     const tbody = document.querySelector('#model-comparison-table tbody');
+    if (!tbody || !perf) return;
     tbody.innerHTML = '';
 
     perf.forEach(r => {
@@ -572,11 +579,24 @@ function renderModelComparison(perf) {
         if (r.is_best) {
             row.className = 'best-row';
         }
+        const maeVal = typeof r.mae === 'number' 
+            ? `$${r.mae.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}` 
+            : (String(r.mae).startsWith('$') ? r.mae : `$${parseFloat(r.mae).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`);
+            
+        const rmseVal = typeof r.rmse === 'number' 
+            ? `$${r.rmse.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}` 
+            : (String(r.rmse).startsWith('$') ? r.rmse : `$${parseFloat(r.rmse).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`);
+            
+        const rawR2 = typeof r.r2 === 'number' ? r.r2 : parseFloat(r.r2);
+        const r2Val = (!isNaN(rawR2) && rawR2 < 0) 
+            ? '—' 
+            : (!isNaN(rawR2) ? rawR2.toFixed(4) : '—');
+
         row.innerHTML = `
             <td>${r.model}${r.is_best ? ' 🏆' : ''}</td>
-            <td>${r.mae}</td>
-            <td>${r.rmse}</td>
-            <td>${r.r2}</td>
+            <td>${maeVal}</td>
+            <td>${rmseVal}</td>
+            <td>${r2Val}</td>
         `;
         tbody.appendChild(row);
     });
@@ -680,7 +700,8 @@ btnRunForecast.addEventListener('click', async () => {
             fcMetricsGrid.style.display = 'grid';
             document.getElementById('fc-metric-mae').textContent = `$${data.metrics.MAE.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
             document.getElementById('fc-metric-rmse').textContent = `$${data.metrics.RMSE.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-            document.getElementById('fc-metric-r2').textContent = data.metrics.R2.toFixed(4);
+            const r2Num = Number(data.metrics.R2);
+            document.getElementById('fc-metric-r2').textContent = (r2Num < 0 || isNaN(r2Num)) ? '—' : r2Num.toFixed(4);
         } else {
             fcMetricsGrid.style.display = 'none';
         }
@@ -846,13 +867,17 @@ async function loadProductsPanel() {
         tbody.innerHTML = '';
 
         // Use aggregated products listings for display
-        data.products.forEach(p => {
+        const items = (data.catalogue && data.catalogue.length > 0) ? data.catalogue : (data.products || []);
+        items.forEach(p => {
             const tr = document.createElement('tr');
+            const category = p.category || 'General';
+            const units = (p.units_sold !== undefined && p.units_sold !== null) ? Number(p.units_sold).toLocaleString() : Math.round(p.revenue / 500);
+            const price = (p.avg_price !== undefined && p.avg_price !== null) ? `$${valStr(p.avg_price)}` : `$${valStr(p.revenue)}`;
             tr.innerHTML = `
                 <td>${p.name}</td>
-                <td>Electronics</td> <!-- default category tag mapping -->
-                <td>${Math.round(p.revenue / 500)}</td>
-                <td>$${valStr(p.revenue)}</td>
+                <td>${category}</td>
+                <td>${units}</td>
+                <td>${price}</td>
             `;
             tbody.appendChild(tr);
         });

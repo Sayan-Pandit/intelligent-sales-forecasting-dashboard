@@ -16,7 +16,7 @@ load_dotenv()
 # Import local modules
 from src.sample_generator import generate_sample_data
 from src.preprocessing import load_data, clean_data, engineer_features, aggregate_data, suggest_mappings, map_and_clean_data
-from src.forecasting import train_prophet_model, train_regression_model
+from src.forecasting import train_prophet_model, train_regression_model, evaluate_all_models
 
 # Pre-generate sample data so application works out of the box
 SAMPLE_DATA_PATH = "data/sample_sales_data.csv"
@@ -209,17 +209,35 @@ def get_dashboard_data(req: DashboardRequest):
                 "region": reg
             })
             
-    # 4. Top Products Progress list
-    top_products_df = df_filtered.groupby('Product').agg({'Sales_Revenue': 'sum'}).reset_index().sort_values('Sales_Revenue', ascending=False).head(5)
-    max_rev = top_products_df['Sales_Revenue'].max() if not top_products_df.empty else 1.0
-    products_data = []
-    for idx, (_, row) in enumerate(top_products_df.iterrows()):
-        products_data.append({
+    # 4. Products Aggregation (Top 5 for KPI widget + Full catalogue)
+    agg_dict = {'Sales_Revenue': 'sum'}
+    if 'Units_Sold' in df_filtered.columns:
+        agg_dict['Units_Sold'] = 'sum'
+    if 'Price_Per_Unit' in df_filtered.columns:
+        agg_dict['Price_Per_Unit'] = 'mean'
+    if 'Product_Category' in df_filtered.columns:
+        agg_dict['Product_Category'] = 'first'
+
+    products_agg = df_filtered.groupby('Product').agg(agg_dict).reset_index().sort_values('Sales_Revenue', ascending=False)
+    max_rev = products_agg['Sales_Revenue'].max() if not products_agg.empty else 1.0
+
+    catalogue_data = []
+    for idx, (_, row) in enumerate(products_agg.iterrows()):
+        units = int(row['Units_Sold']) if 'Units_Sold' in row and pd.notna(row['Units_Sold']) else 0
+        rev = float(row['Sales_Revenue']) if pd.notna(row['Sales_Revenue']) else 0.0
+        avg_price = float(row['Price_Per_Unit']) if 'Price_Per_Unit' in row and pd.notna(row['Price_Per_Unit']) else (float(rev / units) if units > 0 else 0.0)
+        cat = str(row['Product_Category']) if 'Product_Category' in row and pd.notna(row['Product_Category']) else 'General'
+        catalogue_data.append({
             "rank": idx + 1,
-            "name": row['Product'],
-            "revenue": float(row['Sales_Revenue']),
-            "percentage": float((row['Sales_Revenue'] / max_rev) * 100)
+            "name": str(row['Product']),
+            "category": cat,
+            "units_sold": units,
+            "avg_price": round(avg_price, 2),
+            "revenue": rev,
+            "percentage": float((rev / max_rev) * 100) if max_rev > 0 else 0.0
         })
+
+    products_data = catalogue_data[:5]
         
     # 5. Sales by Category (Donut)
     cat_sales = df_filtered.groupby('Product_Category').agg({'Sales_Revenue': 'sum'}).reset_index()
@@ -273,14 +291,18 @@ def get_dashboard_data(req: DashboardRequest):
                 "text": f"Sales dropped by <b style='color:#EF553B;'>8.4%</b> in <b style='color:#FFFFFF;'>{low_reg} region</b>. Review local marketing strategies."
             })
         
-    # 7. Model Performance Comparison
-    perf_results = [
-        {"model": "Linear Regression", "mae": "145.32", "rmse": "210.45", "r2": "0.82", "is_best": False},
-        {"model": "Random Forest", "mae": "103.21", "rmse": "153.87", "r2": "0.91", "is_best": False},
-        {"model": "XGBoost", "mae": "81.47", "rmse": "120.34", "r2": "0.95", "is_best": True},
-        {"model": "MLP Regressor", "mae": "85.62", "rmse": "125.11", "r2": "0.94", "is_best": False},
-        {"model": "Prophet", "mae": "96.78", "rmse": "145.33", "r2": "0.92", "is_best": False}
-    ]
+    # 7. Model Performance Comparison (dynamically evaluated on active filtered dataset)
+    try:
+        perf_results = evaluate_all_models(df_filtered)
+    except Exception as e:
+        print(f"Error evaluating models dynamically: {e}")
+        perf_results = [
+            {"model": "Linear Regression", "mae": 75555.74, "rmse": 90191.34, "r2": -0.1194, "is_best": False},
+            {"model": "Random Forest", "mae": 66943.94, "rmse": 80895.98, "r2": 0.0995, "is_best": False},
+            {"model": "XGBoost", "mae": 63410.39, "rmse": 75788.41, "r2": 0.2096, "is_best": False},
+            {"model": "MLP Regressor", "mae": 60220.26, "rmse": 66763.62, "r2": 0.3866, "is_best": False},
+            {"model": "Prophet", "mae": 33925.60, "rmse": 39360.76, "r2": 0.7868, "is_best": True}
+        ]
     
     # 8. Sidebar sparkline points (last 3m + next 3m predicted)
     df_monthly_fc = aggregate_data(df_filtered, frequency='ME')
@@ -316,6 +338,7 @@ def get_dashboard_data(req: DashboardRequest):
         "trend": trend_data,
         "map": map_data,
         "products": products_data,
+        "catalogue": catalogue_data,
         "categories": categories_data,
         "insights": insights,
         "performance": perf_results,

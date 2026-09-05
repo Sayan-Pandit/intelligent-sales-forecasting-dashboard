@@ -29,8 +29,7 @@ def generate_report_content(df_filtered, report_type="executive"):
     api_key = os.environ.get("GEMINI_API_KEY")
     if api_key:
         try:
-            prompt = f"""
-You are an expert Chief Financial Officer and Senior Business Intelligence Director.
+            prompt = f"""You are an expert Chief Financial Officer and Senior Business Intelligence Director.
 Write a highly polished, professional, executive-ready sales performance report based on the following metrics:
 
 Report Template Type: {report_type}
@@ -44,24 +43,44 @@ Metrics Summary:
 - Product Category Sales: {json.dumps(cat_summary)}
 - Top 5 Products by Revenue: {json.dumps(top_products)}
 
-Requirements for Output:
-1. Provide a professional title at the top (do not use # as a header, use styled bold text or HTML if you want).
-2. Organize the content in clean sections (e.g. Executive Summary, Financial Overview, Segment Analysis, Strategic Recommendations).
-3. Do not include markdown code block syntax (like ```html). Return ONLY the clean, rendered HTML that is safe to insert directly into a div.
-4. Highlight important numbers, metrics, or growth trends using inline styles (e.g., <b style='color:#6B74FF;'>...</b> or <b style='color:#00D4A0;'>...</b>). Use professional typography spacing and structure (e.g., <p>, <ul>, <li>, <h4>).
-5. Ensure the tone is corporate, analytical, and highly structured.
+DESIGN & STYLING REQUIREMENTS (DARK THEME DASHBOARD INTEGRATION):
+This report is embedded directly into a modern dark-mode glassmorphic dashboard (dark slate background #121422, white primary text #E2E8F0, secondary text #94A3B8).
+1. STRICT RULE: Do NOT generate a white background container. <div style="background: white..."> or <div style="background: #ffffff..."> is STRICTLY FORBIDDEN. Keep the container transparent (<div style="background: transparent;">).
+2. Professional Typography & Layout:
+   - Report Title: <h2 style="color: #FFFFFF; font-size: 20px; font-weight: 700; margin-bottom: 6px;">Executive Sales Performance Report</h2>
+   - Subtitle/Metadata: <div style="color: #94A3B8; font-size: 12px; margin-bottom: 24px;">Office of the CFO & Business Intelligence | Verified CRM Data</div>
+   - Section Headers: <h3 style="color: #818CF8; font-size: 15px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; margin-top: 24px; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 6px;">Section Title</h3>
+   - Paragraphs: <p style="color: #CBD5E1; font-size: 14px; line-height: 1.7; margin-bottom: 14px;">...</p>
+   - Unordered Lists: <ul style="color: #CBD5E1; font-size: 14px; line-height: 1.7; padding-left: 20px; margin-bottom: 14px;">
+3. Accent Colors for Metrics:
+   - Revenue / Positive Growth: <b style="color: #00D4A0;">...</b>
+   - Profit / Margins: <b style="color: #60A5FA;">...</b>
+   - Units / AOV: <b style="color: #FBBF24;">...</b>
+4. Include structured sections:
+   - Executive Summary
+   - Financial Overview & Margin Health
+   - Regional & Category Breakdown
+   - Strategic Recommendations
+5. Return ONLY clean, valid, fully closed HTML safe to insert into a div. Do NOT include markdown fences (like ```html).
 """
-            model_name = os.environ.get("GEMINI_MODEL", "gemini-3.6-flash")
+            model_name = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash")
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
             headers = {"Content-Type": "application/json"}
             payload = {
                 "contents": [{"parts": [{"text": prompt}]}],
                 "generationConfig": {
-                    "temperature": 0.4,
-                    "maxOutputTokens": 2048
+                    "temperature": 0.3,
+                    "maxOutputTokens": 4096,
+                    "thinkingConfig": {"thinkingBudget": 0}
                 }
             }
-            response = requests.post(url, headers=headers, json=payload, timeout=20.0)
+            response = requests.post(url, headers=headers, json=payload, timeout=25.0)
+            
+            # If 429 or 404 on preferred model, try gemini-flash-latest
+            if response.status_code in [404, 429] and model_name != "gemini-flash-latest":
+                fallback_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={api_key}"
+                response = requests.post(fallback_url, headers=headers, json=payload, timeout=25.0)
+
             if response.status_code == 200:
                 res_json = response.json()
                 raw_text = res_json['candidates'][0]['content']['parts'][0]['text'].strip()
@@ -73,9 +92,15 @@ Requirements for Output:
                     if lines[-1].startswith("```"):
                         lines = lines[:-1]
                     raw_text = "\n".join(lines).strip()
+                
+                # Sanitize any accidental light background styles injected by the LLM
+                import re
+                raw_text = re.sub(r'background(?:-color)?:\s*(?:#ffffff|#fff|#f8fafc|white);?', 'background: transparent;', raw_text, flags=re.IGNORECASE)
+                raw_text = re.sub(r'color:\s*(?:#1e293b|#0f172a|#2d3748|#000000|#000|black);?', 'color: #CBD5E1;', raw_text, flags=re.IGNORECASE)
+                
                 return raw_text
             else:
-                print(f"Gemini API returned code {response.status_code} during report generation: {response.text}")
+                print(f"Gemini API returned code {response.status_code} during report generation: {response.text[:250]}")
         except Exception as e:
             print(f"Gemini API report generation failed, using rule-based generator: {e}")
 

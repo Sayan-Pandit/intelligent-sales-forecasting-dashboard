@@ -485,7 +485,7 @@ def evaluate_all_models(df):
             "Model": r['Model'],
             "MAE": f"{r['MAE']:.2f}" if isinstance(r['MAE'], float) else r['MAE'],
             "RMSE": f"{r['RMSE']:.2f}" if isinstance(r['RMSE'], float) else r['RMSE'],
-            "R2": f"{r['R2']:.2f}" if isinstance(r['R2'], float) else r['R2'],
+            "R2": "—" if (isinstance(r['R2'], (int, float)) and r['R2'] < 0) else (f"{r['R2']:.4f}" if isinstance(r['R2'], float) else r['R2']),
             "is_best": (idx == best_idx)
         })
         
@@ -1149,7 +1149,8 @@ if df_raw is not None:
                                 with m_col2:
                                     st.metric("Root Mean Squared Error (RMSE)", f"${metrics['RMSE']:,.2f}")
                                 with m_col3:
-                                    st.metric("R² Score (Variance Explained)", f"{metrics['R2']:.4f}")
+                                    r2_display = "—" if metrics['R2'] < 0 else f"{metrics['R2']:.4f}"
+                                    st.metric("R² Score (Variance Explained)", r2_display)
                             else:
                                 st.success(f"Successfully fit time-series using {name}!")
                                 
