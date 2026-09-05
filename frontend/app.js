@@ -92,6 +92,17 @@ if (btnViewInsights) {
     });
 }
 
+// View All Alerts button on Dashboard card
+const btnViewAlerts = document.getElementById('btn-view-alerts');
+if (btnViewAlerts) {
+    btnViewAlerts.addEventListener('click', () => {
+        const insightsMenuItem = document.querySelector('.menu-item[data-tab="insights"]');
+        if (insightsMenuItem) {
+            insightsMenuItem.click();
+        }
+    });
+}
+
 // Initial load
 window.addEventListener('DOMContentLoaded', async () => {
     await fetchConfig();
@@ -316,6 +327,7 @@ async function loadDashboard() {
         renderModelComparison(dashboardData.performance);
         updateSidebarForecast(dashboardData.sidebar_forecast);
         updateDataSummary(dashboardData.summary);
+        renderAlerts(dashboardData.alerts);
         runSimulator(); // trigger initial simulator render
 
         if (activeTab === 'analytics') {
@@ -690,6 +702,37 @@ function updateDataSummary(sum) {
     document.getElementById('summary-orders').textContent = sum.orders.toLocaleString();
     document.getElementById('summary-customers').textContent = sum.customers.toLocaleString();
     document.getElementById('summary-quality').textContent = `${sum.quality}%`;
+}
+
+// Render Dynamic Data-Driven Alerts
+function renderAlerts(alerts) {
+    const container = document.getElementById('alerts-container');
+    if (!container) return;
+
+    if (!alerts || alerts.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state" style="padding: 16px 8px; text-align: center;">
+                <span class="empty-state-title" style="font-size: 13px; color: var(--text-hi);">No active alerts</span>
+                <span class="empty-state-desc" style="font-size: 11px; color: var(--text-mid);">All operational metrics are within standard performance tolerances.</span>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = '';
+    alerts.forEach(alert => {
+        const item = document.createElement('div');
+        item.className = `alert-item ${alert.border || 'warning-border'}`;
+        item.setAttribute('role', 'listitem');
+        item.innerHTML = `
+            <div class="alert-content">
+                <span class="alert-desc" title="${alert.title}">${alert.title}</span>
+                <span class="alert-sub">${alert.subtitle || ''}</span>
+            </div>
+            <span class="alert-time ${alert.text_color || 'text-warning'}">${alert.time || 'Recent'}</span>
+        `;
+        container.appendChild(item);
+    });
 }
 
 // Simulator computations
@@ -1520,13 +1563,28 @@ function renderDetailedInsights(data) {
             icon: 'shield-check',
             title: `Forecast Confidence & Model Fit`,
             desc: `Top algorithm (<b>${bestModel.model}</b>, R² ${r2Val}) demonstrates tight historical fit. Maintain capital buffers for quarter-end volatility.`
-        },
-        {
-            icon: 'sliders',
-            title: `Margin Compression Protection`,
-            desc: `Flag non-standard contracts with discretionary discounts above 12% to preserve profitability amidst variable freight rates.`
         }
     ];
+
+    // Inject live operational alerts computed for this active dataset
+    if (data.alerts && data.alerts.length > 0) {
+        data.alerts.forEach(al => {
+            const isError = al.border && al.border.includes('error');
+            riskItems.push({
+                icon: isError ? 'alert-octagon' : 'alert-triangle',
+                title: al.title,
+                desc: al.subtitle ? `${al.subtitle}. Automated telemetry signal.` : 'Continuous telemetry signal from active filtered transactions.'
+            });
+        });
+    } else {
+        const marginValNum = parseFloat(marginVal) || 22.0;
+        const discountCap = Math.max(5, Math.round(marginValNum * 0.4));
+        riskItems.push({
+            icon: 'sliders',
+            title: `Margin Compression Protection`,
+            desc: `Enforce a strict <b>${discountCap}%</b> maximum discretionary discount cap to preserve operating margin benchmarks.`
+        });
+    }
 
     riskItems.forEach(item => {
         const div = document.createElement('div');

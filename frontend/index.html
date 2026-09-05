@@ -363,22 +363,11 @@
                     <div class="dashboard-card col-span-4">
                         <div class="card-header-flex">
                             <span class="card-title">Recent Alerts</span>
-                            <button class="view-all-btn" style="width:auto;padding:4px 12px;" aria-label="View all alerts">View All</button>
+                            <button class="view-all-btn" id="btn-view-alerts" style="width:auto;padding:4px 12px;" aria-label="View all alerts">View All</button>
                         </div>
-                        <div class="alerts-container" role="list" aria-label="Recent alerts">
-                            <div class="alert-item error-border" role="listitem">
-                                <div class="alert-content">
-                                    <span class="alert-desc">Sales in East region dropped by 12%</span>
-                                    <span class="alert-sub">Compared to last month</span>
-                                </div>
-                                <span class="alert-time text-error" aria-label="2 hours ago">2h ago</span>
-                            </div>
-                            <div class="alert-item warning-border" role="listitem">
-                                <div class="alert-content">
-                                    <span class="alert-desc">High Price Elasticity: Laptop Pro</span>
-                                    <span class="alert-sub">Consider a 5% discount</span>
-                                </div>
-                                <span class="alert-time text-warning" aria-label="4 hours ago">4h ago</span>
+                        <div class="alerts-container" id="alerts-container" role="list" aria-label="Recent alerts">
+                            <div class="empty-state" style="padding: 16px 8px; text-align: center;">
+                                <span class="empty-state-desc" style="font-size: 11.5px; color: var(--text-mid);">Analyzing real-time operational alerts...</span>
                             </div>
                         </div>
                     </div>
@@ -720,7 +709,7 @@
         </main>
     </div>
 
-    <script src="app.js?v=10"></script>
+    <script src="app.js?v=11"></script>
 
 
     <script>

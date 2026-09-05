@@ -1172,9 +1172,13 @@ textarea:focus-visible,
 
 .error-border   { background: rgba(255, 82, 82, 0.07);   border-left: 3px solid var(--color-error); }
 .warning-border { background: rgba(255, 179, 71, 0.07); border-left: 3px solid var(--color-warning); }
+.success-border { background: rgba(0, 204, 150, 0.07); border-left: 3px solid var(--color-accent); }
+.info-border    { background: rgba(94, 143, 196, 0.07); border-left: 3px solid var(--cool); }
 
 .text-error   { color: var(--color-error); }
 .text-warning { color: var(--color-warning); }
+.text-success { color: var(--color-accent); }
+.text-info    { color: var(--cool); }
 
 /* ================================================================
    FORECAST SIMULATOR
