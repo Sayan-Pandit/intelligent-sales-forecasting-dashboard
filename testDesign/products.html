@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Products — Outlook</title>
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="rail">
+    <div class="rail-brand">
+      <div class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 15a5 5 0 015-5 6 6 0 0111 3 4 4 0 01-1 8H7a4 4 0 01-4-4z"/></svg></div>
+      <div class="nm">Outlook</div>
+    </div>
+    <a class="rail-item " href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Dashboard</a>
+    <a class="rail-item " href="analytics.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V10M12 19V5M20 19v-7"/></svg>Analytics</a>
+    <a class="rail-item " href="forecasting.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l5-5 4 4 9-10"/></svg>Forecasting</a>
+    <a class="rail-item active" href="products.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.7l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.7l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>Products</a>
+    <a class="rail-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M3 21c0-4 3-6 6-6s6 2 6 6M17 11a3 3 0 100-6M21 21c0-3-1.8-5-4-5.7"/></svg>Customers</a>
+    <a class="rail-item " href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h9l5 5v15H6z"/><path d="M9 13h6M9 17h6"/></svg>Reports</a>
+    <div class="rail-foot">
+      <div class="l">Next 3 months</div>
+      <div class="v mono">$2.58M</div>
+      <div class="d">▲ warming, +3.0%</div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="topbar">
+      <div>
+        <h1>Products</h1>
+        <p>Full catalogue mapped by revenue contribution</p>
+      </div>
+      <div class="range">Jan 1, 2023 – Jun 30, 2026</div>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi"><div class="l">SKUs tracked</div><div class="n">5</div></div>
+      <div class="kpi"><div class="l">Top performer</div><div class="n" style="font-size:15px;">Laptop Pro</div></div>
+      <div class="kpi"><div class="l">Units sold (all)</div><div class="n">54,135</div></div>
+      <div class="kpi"><div class="l">Combined revenue</div><div class="n">$27.07M</div></div>
+      <div class="kpi"><div class="l">Avg list price</div><div class="n">$5,491</div></div>
+    </div>
+
+    <div class="filter-bar">
+      <select><option>All regions</option></select>
+      <select><option>All categories</option></select>
+      <select><option>All representatives</option></select>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h3>Product catalogue</h3><span class="tag">by revenue share</span></div>
+      <table>
+        <thead><tr><th>Product</th><th>Category</th><th>Units sold</th><th>Avg list price</th><th>Revenue share</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="name">Laptop Pro</td><td>Electronics</td><td class="mono">22,483</td><td class="mono">$11,241,401.78</td>
+            <td style="min-width:140px;"><div class="bar"><i style="background:var(--warm);width:41%"></i></div></td>
+          </tr>
+          <tr>
+            <td class="name">Smartphone X</td><td>Electronics</td><td class="mono">15,708</td><td class="mono">$7,853,896.18</td>
+            <td><div class="bar"><i style="background:var(--steel);width:29%"></i></div></td>
+          </tr>
+          <tr>
+            <td class="name">Tablet Air</td><td>Electronics</td><td class="mono">10,045</td><td class="mono">$5,022,724.66</td>
+            <td><div class="bar"><i style="background:var(--steel);width:19%"></i></div></td>
+          </tr>
+          <tr>
+            <td class="name">Wireless Earbuds</td><td>Electronics</td><td class="mono">3,011</td><td class="mono">$1,505,273.28</td>
+            <td><div class="bar"><i style="background:var(--cool);width:6%"></i></div></td>
+          </tr>
+          <tr>
+            <td class="name">Smart Watch</td><td>Electronics</td><td class="mono">2,888</td><td class="mono">$1,443,760.67</td>
+            <td><div class="bar"><i style="background:var(--cool);width:5%"></i></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+</body>
+</html>

@@ -290,14 +290,21 @@ async function loadDashboard() {
 
         dashboardData = await response.json();
         if (dashboardData.error) {
-            alert(dashboardData.error);
+            console.warn("Dashboard data error:", dashboardData.error);
+            if (window.showToast) {
+                showToast(dashboardData.error, 'warning');
+            }
             return;
         }
 
         // Update header dates
-        const sDate = new Date(activeFilters.start_date);
-        const eDate = new Date(activeFilters.end_date);
-        displayDateRange.textContent = `${sDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - ${eDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+        if (activeFilters.start_date && activeFilters.end_date) {
+            const sDate = new Date(activeFilters.start_date);
+            const eDate = new Date(activeFilters.end_date);
+            if (!isNaN(sDate.getTime()) && !isNaN(eDate.getTime())) {
+                displayDateRange.textContent = `${sDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - ${eDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+            }
+        }
 
         updateKPIs(dashboardData.kpis);
         updateOutlookHeroCard(dashboardData);
@@ -328,15 +335,16 @@ function updateOutlookHeroCard(data) {
     const grid = document.getElementById('outlook-months-grid');
     if (!grid) return;
 
-    // Use monthly revenue trend or extrapolation
-    const trend = data.trend || [];
-    const recent = trend.slice(-6);
-    if (recent.length > 0) {
+    // Use forward-looking 6-month predictions (Jul - Dec 2026)
+    const forecast = (data.horizon_forecast && data.horizon_forecast.length > 0)
+        ? data.horizon_forecast.slice(0, 6)
+        : (data.trend || []).slice(-6);
+
+    if (forecast.length > 0) {
         grid.innerHTML = '';
-        const maxVal = Math.max(...recent.map(r => r.revenue), 1);
-        recent.forEach((r, idx) => {
-            const d = new Date(r.date);
-            const mName = d.toLocaleDateString('en-US', { month: 'short' });
+        const maxVal = Math.max(...forecast.map(r => r.revenue), 1);
+        forecast.forEach((r, idx) => {
+            const mName = r.month || (new Date(r.date).toLocaleDateString('en-US', { month: 'short' }));
             const valK = Math.round(r.revenue / 1e3);
             const pct = Math.min(100, Math.max(25, Math.round((r.revenue / maxVal) * 100)));
             const barColor = pct >= 75 ? 'var(--warm)' : (pct >= 55 ? 'var(--steel)' : 'var(--cool)');
@@ -354,11 +362,11 @@ function updateOutlookHeroCard(data) {
 
     // Update tag with best model if available
     const perf = data.performance || [];
-    const best = perf.find(p => p.is_best) || perf[0];
+    const best = perf.find(p => p.is_best) || perf.find(p => p.model === 'Prophet') || perf[0];
     if (best) {
         const tagEl = document.getElementById('outlook-hero-tag');
         if (tagEl) {
-            const r2Str = (typeof best.r2 === 'number' && best.r2 >= 0) ? `R² ${best.r2.toFixed(2)}` : 'R² 0.95';
+            const r2Str = (typeof best.r2 === 'number' && best.r2 >= 0) ? `R² ${best.r2.toFixed(2)}` : 'R² 0.79';
             tagEl.textContent = `${best.model} · ${r2Str}`;
         }
     }
@@ -565,13 +573,32 @@ function renderInsights(insights) {
 
     insights.forEach(ins => {
         const item = document.createElement('div');
-        item.className = 'insight-item';
+        const typeClass = ins.type ? ` ${ins.type}` : '';
+        item.className = `insight-item${typeClass}`;
+
+        let iconName = ins.icon || 'sparkles';
+        const emojiMap = {
+            '📈': 'trending-up', '🟢': 'trending-up',
+            '📉': 'trending-down', '🔴': 'trending-down', '🔻': 'alert-triangle',
+            '💡': 'map-pin', '📍': 'map-pin',
+            '⚡': 'layers', '📦': 'layers'
+        };
+        if (emojiMap[iconName]) {
+            iconName = emojiMap[iconName];
+        }
+
         item.innerHTML = `
-            <span class="insight-icon" aria-hidden="true">${ins.icon}</span>
+            <span class="insight-icon" aria-hidden="true">
+                <i data-lucide="${iconName}"></i>
+            </span>
             <span>${ins.text}</span>
         `;
         container.appendChild(item);
     });
+
+    if (window.lucide) {
+        lucide.createIcons();
+    }
 }// Render Category Donut
 function renderCategoryDonut(categories) {
     const values = categories.map(c => c.revenue);
@@ -645,13 +672,17 @@ function renderModelComparison(perf) {
             : (!isNaN(rawR2) ? rawR2.toFixed(4) : '—');
 
         row.innerHTML = `
-            <td class="name">${r.model}${r.is_best ? ' 🏆' : ''}</td>
+            <td class="name">${r.model}${r.is_best ? ' <span class="best-badge"><i data-lucide="award"></i> Best</span>' : ''}</td>
             <td class="mono">${maeVal}</td>
             <td class="mono">${rmseVal}</td>
             <td class="mono">${r2Val}</td>
         `;
         tbody.appendChild(row);
     });
+
+    if (window.lucide) {
+        lucide.createIcons();
+    }
 }
 
 // Update Data Summary
@@ -1100,91 +1131,182 @@ function renderDiscountPerformance(discountData) {
 
 // Reports Tab Handler
 let currentReportHtml = '';
+
+function triggerFileDownload(url, payload, defaultFilename) {
+    if (window.showToast) showToast('Preparing executive report for download...', 'info');
+    try {
+        const params = new URLSearchParams();
+        if (payload.start_date) params.set('start_date', payload.start_date);
+        if (payload.end_date) params.set('end_date', payload.end_date);
+        if (payload.regions && payload.regions.length) params.set('regions', payload.regions.join(','));
+        if (payload.categories && payload.categories.length) params.set('categories', payload.categories.join(','));
+        if (payload.date_col) params.set('date_col', payload.date_col);
+        if (payload.sales_col) params.set('sales_col', payload.sales_col);
+        if (payload.report_type) params.set('report_type', payload.report_type);
+        if (payload.period) params.set('period', payload.period);
+
+        const downloadUrl = `${url}?${params.toString()}`;
+        
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = downloadUrl;
+        a.download = defaultFilename;
+        a.setAttribute('download', defaultFilename);
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+            if (document.body.contains(a)) {
+                document.body.removeChild(a);
+            }
+        }, 1500);
+        if (window.showToast) showToast(`Downloaded: ${defaultFilename}`, 'success');
+    } catch (err) {
+        console.error('File export error:', err);
+        if (window.showToast) showToast('Export download error. Please try again.', 'error');
+    }
+}
+
 function initReportsPanel() {
     const btnGenerate = document.getElementById('btn-generate-report');
     const reportTypeSelect = document.getElementById('report-type');
+    const reportPeriodSelect = document.getElementById('report-period');
     const reportLoading = document.getElementById('report-loading');
     const reportContainer = document.getElementById('report-content-container');
     const reportTitleDisplay = document.getElementById('report-title-display');
     const reportBodyDisplay = document.getElementById('report-body-display');
 
+    const btnInstantPdf = document.getElementById('btn-instant-pdf');
+    const btnInstantExcel = document.getElementById('btn-instant-excel');
+    const btnDownloadPdf = document.getElementById('btn-download-report-pdf');
+    const btnDownloadExcel = document.getElementById('btn-download-report-excel');
     const btnDownloadTxt = document.getElementById('btn-download-report-txt');
     const btnDownloadHtml = document.getElementById('btn-download-report-html');
+
+    // Refresh lucide icons if dynamically inserted
+    if (window.lucide) lucide.createIcons();
 
     // Clear display initially if not loaded
     if (!currentReportHtml) {
         reportContainer.style.display = 'none';
     }
 
-    // Unbind previous event listener to avoid duplicate events on tab click
-    btnGenerate.onclick = async () => {
-        reportLoading.style.display = 'flex';
-        reportContainer.style.display = 'none';
+    const getExportPayload = () => ({
+        ...activeFilters,
+        report_type: reportTypeSelect ? reportTypeSelect.value : 'executive',
+        period: reportPeriodSelect ? reportPeriodSelect.value : 'monthly'
+    });
 
-        const reqPayload = {
-            ...activeFilters,
-            report_type: reportTypeSelect.value
+    // Instant PDF Export handler
+    if (btnInstantPdf) {
+        btnInstantPdf.onclick = () => {
+            const payload = getExportPayload();
+            const filename = `sales_report_${payload.report_type}_${new Date().toISOString().slice(0, 10)}.pdf`;
+            triggerFileDownload('/api/export/pdf', payload, filename);
         };
+    }
 
-        try {
-            const resp = await fetch('/api/report', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(reqPayload)
-            });
+    // Instant Excel Export handler
+    if (btnInstantExcel) {
+        btnInstantExcel.onclick = () => {
+            const payload = getExportPayload();
+            const filename = `sales_report_${payload.report_type}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+            triggerFileDownload('/api/export/excel', payload, filename);
+        };
+    }
 
-            const data = await resp.json();
-            reportLoading.style.display = 'none';
+    // Secondary report toolbar handlers
+    if (btnDownloadPdf) {
+        btnDownloadPdf.onclick = () => {
+            const payload = getExportPayload();
+            const filename = `sales_report_${payload.report_type}_${new Date().toISOString().slice(0, 10)}.pdf`;
+            triggerFileDownload('/api/export/pdf', payload, filename);
+        };
+    }
 
-            if (data.error) {
-                if (window.showToast) showToast(data.error, 'error');
+    if (btnDownloadExcel) {
+        btnDownloadExcel.onclick = () => {
+            const payload = getExportPayload();
+            const filename = `sales_report_${payload.report_type}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+            triggerFileDownload('/api/export/excel', payload, filename);
+        };
+    }
+
+    // Unbind previous event listener to avoid duplicate events on tab click
+    if (btnGenerate) {
+        btnGenerate.onclick = async () => {
+            reportLoading.style.display = 'flex';
+            reportContainer.style.display = 'none';
+
+            const reqPayload = getExportPayload();
+
+            try {
+                const resp = await fetch('/api/report', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(reqPayload)
+                });
+
+                const data = await resp.json();
+                reportLoading.style.display = 'none';
+
+                if (data.error) {
+                    if (window.showToast) showToast(data.error, 'error');
+                    return;
+                }
+
+                if (data.success) {
+                    currentReportHtml = data.report_html;
+                    reportContainer.style.display = 'block';
+
+                    // Map select value to readable title
+                    const titleMap = {
+                        'executive': 'Executive Sales & AI Performance Report',
+                        'regional': 'Regional Dynamics & Market Share Report',
+                        'products': 'Product Catalogue Analysis & Revenue Report'
+                    };
+                    reportTitleDisplay.textContent = titleMap[reportTypeSelect.value] || 'Sales Report';
+
+                    // Display report content
+                    reportBodyDisplay.innerHTML = currentReportHtml;
+
+                    if (window.showToast) showToast('AI Report compiled successfully.', 'success');
+                }
+            } catch (err) {
+                reportLoading.style.display = 'none';
+                console.error('Error generating report:', err);
+                if (window.showToast) showToast('Report generation failed. Please try again.', 'error');
+            }
+        };
+    }
+
+    // Download handlers for TXT and HTML
+    if (btnDownloadTxt) {
+        btnDownloadTxt.onclick = () => {
+            if (!currentReportHtml) {
+                if (window.showToast) showToast('Please generate an AI Report first.', 'warning');
                 return;
             }
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = currentReportHtml;
+            const textContent = tempDiv.textContent || tempDiv.innerText || '';
 
-            if (data.success) {
-                currentReportHtml = data.report_html;
-                reportContainer.style.display = 'block';
+            const blob = new Blob([textContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${reportTypeSelect.value}_report_${new Date().toISOString().slice(0, 10)}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        };
+    }
 
-                // Map select value to readable title
-                const titleMap = {
-                    'executive': 'Executive Sales & AI Performance Report',
-                    'regional': 'Regional Dynamics & Market Share Report',
-                    'products': 'Product Catalogue Analysis & Revenue Report'
-                };
-                reportTitleDisplay.textContent = titleMap[reportTypeSelect.value] || 'Sales Report';
-
-                // Display report content
-                reportBodyDisplay.innerHTML = currentReportHtml;
-
-                if (window.showToast) showToast('AI Report compiled successfully.', 'success');
+    if (btnDownloadHtml) {
+        btnDownloadHtml.onclick = () => {
+            if (!currentReportHtml) {
+                if (window.showToast) showToast('Please generate an AI Report first.', 'warning');
+                return;
             }
-        } catch (err) {
-            reportLoading.style.display = 'none';
-            console.error('Error generating report:', err);
-            if (window.showToast) showToast('Report generation failed. Please try again.', 'error');
-        }
-    };
-
-    // Download handlers
-    btnDownloadTxt.onclick = () => {
-        if (!currentReportHtml) return;
-        // Strip HTML tags for clean text report
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = currentReportHtml;
-        const textContent = tempDiv.textContent || tempDiv.innerText || '';
-
-        const blob = new Blob([textContent], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${reportTypeSelect.value}_report_${new Date().toISOString().slice(0, 10)}.txt`;
-        a.click();
-        URL.revokeObjectURL(url);
-    };
-
-    btnDownloadHtml.onclick = () => {
-        if (!currentReportHtml) return;
-        const docHtml = `
+            const docHtml = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -1203,16 +1325,18 @@ function initReportsPanel() {
     ${currentReportHtml}
 </body>
 </html>
-        `;
-        const blob = new Blob([docHtml], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${reportTypeSelect.value}_report_${new Date().toISOString().slice(0, 10)}.html`;
-        a.click();
-        URL.revokeObjectURL(url);
-    };
+            `;
+            const blob = new Blob([docHtml], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${reportTypeSelect.value}_report_${new Date().toISOString().slice(0, 10)}.html`;
+            a.click();
+            URL.revokeObjectURL(url);
+        };
+    }
 }
+
 
 // ================================================================
 // AI INSIGHTS PANEL (Dedicated Page Handler)
@@ -1270,14 +1394,17 @@ function renderDetailedInsights(data) {
 
     const growthItems = [
         {
+            icon: 'pie-chart',
             title: `Dominant Category: ${topCat.category}`,
             desc: `Contributes <b>${topCat.percentage.toFixed(1)}%</b> of gross revenue ($${(topCat.revenue / 1e3).toFixed(0)}K). Prioritize inventory buffers and targeted high-intent campaigns.`
         },
         {
+            icon: 'package',
             title: `Volume Driver: ${topProd.name}`,
             desc: `Generated <b>$${(topProd.revenue / 1e3).toFixed(1)}K</b> across ${Number(topProd.units_sold || 0).toLocaleString()} units. Cross-sell with complementary accessories to elevate average basket value.`
         },
         {
+            icon: 'trending-up',
             title: `Forward Demand Horizon`,
             desc: `Projected next-month run rate stands at <b>${fcValStr}</b>. Maintaining supply chain capacity at +10% avoids costly stockout exposure during peak ordering windows.`
         }
@@ -1287,6 +1414,7 @@ function renderDetailedInsights(data) {
         const div = document.createElement('div');
         div.className = 'insight-item growth';
         div.innerHTML = `
+            <span class="insight-icon" aria-hidden="true"><i data-lucide="${item.icon}"></i></span>
             <div style="flex:1;">
                 <div style="font-weight:600;color:var(--text-hi);margin-bottom:3px;font-size:12.5px;">${item.title}</div>
                 <div>${item.desc}</div>
@@ -1307,16 +1435,19 @@ function renderDetailedInsights(data) {
 
     const regionalItems = [
         {
+            icon: 'map-pin',
             title: `Lead Territory: ${leadRegion.name}`,
             desc: `Commands <b>$${(leadRegion.sales / 1e3).toFixed(0)}K</b> in bookings. Maintain dedicated key account coverage to safeguard multi-year renewals.`
         },
         {
+            icon: 'compass',
             title: secondRegion ? `Expansion Vector: ${secondRegion.name}` : `Market Diversification`,
             desc: secondRegion
                 ? `Generated <b>$${(secondRegion.sales / 1e3).toFixed(0)}K</b>. Targeted distributor incentives could accelerate territory penetration by an estimated 12-15%.`
                 : `Geographic revenue distribution remains evenly spread across core international operations.`
         },
         {
+            icon: 'truck',
             title: `Logistics & Fulfillment Routing`,
             desc: `Align regional safety stock directly with sales run rates to lower expediting costs and optimize localized fulfillment velocity.`
         }
@@ -1326,6 +1457,7 @@ function renderDetailedInsights(data) {
         const div = document.createElement('div');
         div.className = 'insight-item regional';
         div.innerHTML = `
+            <span class="insight-icon" aria-hidden="true"><i data-lucide="${item.icon}"></i></span>
             <div style="flex:1;">
                 <div style="font-weight:600;color:var(--text-hi);margin-bottom:3px;font-size:12.5px;">${item.title}</div>
                 <div>${item.desc}</div>
@@ -1341,14 +1473,17 @@ function renderDetailedInsights(data) {
 
     const pricingItems = [
         {
+            icon: 'dollar-sign',
             title: `Gross Margin Baseline: ${marginVal}%`,
             desc: `Average Order Value stands at <b>$${aovVal}</b>. High-margin product lines maintain favorable cash flow against baseline operational expenditures.`
         },
         {
+            icon: 'percent',
             title: `Discount Elasticity Guardrail`,
             desc: `Elasticity models indicate discounts exceeding <b>10%</b> erode EBITDA margins without compensating transaction volume. Enforce a strict 8% standard discount cap.`
         },
         {
+            icon: 'tag',
             title: `Selective Price Refinement`,
             desc: `Inelastic catalog items demonstrate price stability. A calibrated <b>+2.5% to +4.0%</b> adjustment on low-churn SKUs can deliver immediate margin capture.`
         }
@@ -1358,6 +1493,7 @@ function renderDetailedInsights(data) {
         const div = document.createElement('div');
         div.className = 'insight-item pricing';
         div.innerHTML = `
+            <span class="insight-icon" aria-hidden="true"><i data-lucide="${item.icon}"></i></span>
             <div style="flex:1;">
                 <div style="font-weight:600;color:var(--text-hi);margin-bottom:3px;font-size:12.5px;">${item.title}</div>
                 <div>${item.desc}</div>
@@ -1374,16 +1510,19 @@ function renderDetailedInsights(data) {
 
     const riskItems = [
         {
+            icon: isYoyNegative ? 'alert-triangle' : 'trending-up',
             title: isYoyNegative ? `Revenue Contraction Alert` : `Growth Stability Signal`,
             desc: isYoyNegative
                 ? `YoY revenue contracted by <b>${Math.abs(yoy).toFixed(1)}%</b>. Re-examine sales pipelines and re-engage dormant accounts immediately.`
                 : `Annual velocity is positive (+<b>${yoy.toFixed(1)}%</b>). Maintain proactive buffer against supply lead-time extensions.`
         },
         {
+            icon: 'shield-check',
             title: `Forecast Confidence & Model Fit`,
             desc: `Top algorithm (<b>${bestModel.model}</b>, R² ${r2Val}) demonstrates tight historical fit. Maintain capital buffers for quarter-end volatility.`
         },
         {
+            icon: 'sliders',
             title: `Margin Compression Protection`,
             desc: `Flag non-standard contracts with discretionary discounts above 12% to preserve profitability amidst variable freight rates.`
         }
@@ -1393,6 +1532,7 @@ function renderDetailedInsights(data) {
         const div = document.createElement('div');
         div.className = 'insight-item risk';
         div.innerHTML = `
+            <span class="insight-icon" aria-hidden="true"><i data-lucide="${item.icon}"></i></span>
             <div style="flex:1;">
                 <div style="font-weight:600;color:var(--text-hi);margin-bottom:3px;font-size:12.5px;">${item.title}</div>
                 <div>${item.desc}</div>

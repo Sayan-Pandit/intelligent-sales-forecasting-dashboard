@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Reports — Outlook</title>
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="rail">
+    <div class="rail-brand">
+      <div class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 15a5 5 0 015-5 6 6 0 0111 3 4 4 0 01-1 8H7a4 4 0 01-4-4z"/></svg></div>
+      <div class="nm">Outlook</div>
+    </div>
+    <a class="rail-item " href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Dashboard</a>
+    <a class="rail-item " href="analytics.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V10M12 19V5M20 19v-7"/></svg>Analytics</a>
+    <a class="rail-item " href="forecasting.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l5-5 4 4 9-10"/></svg>Forecasting</a>
+    <a class="rail-item " href="products.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.7l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.7l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>Products</a>
+    <a class="rail-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M3 21c0-4 3-6 6-6s6 2 6 6M17 11a3 3 0 100-6M21 21c0-3-1.8-5-4-5.7"/></svg>Customers</a>
+    <a class="rail-item active" href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h9l5 5v15H6z"/><path d="M9 13h6M9 17h6"/></svg>Reports</a>
+    <div class="rail-foot">
+      <div class="l">Next 3 months</div>
+      <div class="v mono">$2.58M</div>
+      <div class="d">▲ warming, +3.0%</div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="topbar">
+      <div>
+        <h1>Reports</h1>
+        <p>Generate executive summaries from current filters</p>
+      </div>
+      <div class="range">Jan 1, 2023 – Jun 30, 2026</div>
+    </div>
+
+    <div class="panel" style="margin-bottom:16px;">
+      <div class="panel-head"><h3>Executive sales &amp; AI analysis report</h3><span class="tag">Report template</span></div>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+        <select style="flex:1;min-width:220px;"><option>Executive performance summary</option></select>
+        <span class="btn primary">Generate report</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h3>Executive performance report</h3>
+        <div style="display:flex;gap:8px;"><span class="btn">Download TXT</span><span class="btn">Download HTML</span></div>
+      </div>
+      <div style="font-size:11.5px;color:var(--text-low);margin-bottom:18px;">Compiled Aug 30, 2026 · Data source: verified CRM database</div>
+
+      <div class="archivo" style="font-size:12px;color:var(--steel);font-weight:600;margin-bottom:8px;">1. Executive summary</div>
+      <p style="font-size:12.5px;color:var(--text-mid);line-height:1.7;max-width:80ch;">
+        The business recorded total sales revenue of <span class="mono" style="color:var(--warm)">$30,338,539.77</span>,
+        driving a net profit of <span class="mono" style="color:var(--steel)">$6,673,619.20</span> — an operating margin of
+        <span class="mono" style="color:var(--text-hi)">22.00%</span>. 75,482 units shipped at an average order value of
+        <span class="mono" style="color:var(--text-hi)">$611.91</span>.
+      </p>
+
+      <div class="archivo" style="font-size:12px;color:var(--steel);font-weight:600;margin:20px 0 10px;">2. Regional distribution</div>
+      <table>
+        <thead><tr><th>Region</th><th>Revenue</th><th>Contribution</th></tr></thead>
+        <tbody>
+          <tr><td class="name">West</td><td class="mono">$8,405,069.23</td><td class="mono">27.7%</td></tr>
+          <tr><td class="name">East</td><td class="mono">$8,223,601.33</td><td class="mono">27.1%</td></tr>
+          <tr><td class="name">North</td><td class="mono">$7,576,990.60</td><td class="mono">25.0%</td></tr>
+          <tr><td class="name">South</td><td class="mono">$6,132,878.61</td><td class="mono">20.2%</td></tr>
+        </tbody>
+      </table>
+
+      <div class="archivo" style="font-size:12px;color:var(--steel);font-weight:600;margin:20px 0 10px;">3. Product performance</div>
+      <table>
+        <thead><tr><th>Category</th><th>Revenue</th><th>Share</th></tr></thead>
+        <tbody>
+          <tr><td class="name">Electronics</td><td class="mono">$24,118,022.62</td><td class="mono">79.5%</td></tr>
+          <tr><td class="name">Accessories</td><td class="mono">$2,458,325.40</td><td class="mono">8.1%</td></tr>
+          <tr><td class="name">Wearables</td><td class="mono">$1,917,652.08</td><td class="mono">6.3%</td></tr>
+          <tr><td class="name">Others</td><td class="mono">$1,113,799.57</td><td class="mono">3.7%</td></tr>
+          <tr><td class="name">Home Appliances</td><td class="mono">$730,740.10</td><td class="mono">2.4%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+</body>
+</html>

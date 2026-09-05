@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Analytics — Outlook</title>
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="rail">
+    <div class="rail-brand">
+      <div class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 15a5 5 0 015-5 6 6 0 0111 3 4 4 0 01-1 8H7a4 4 0 01-4-4z"/></svg></div>
+      <div class="nm">Outlook</div>
+    </div>
+    <a class="rail-item " href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Dashboard</a>
+    <a class="rail-item active" href="analytics.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V10M12 19V5M20 19v-7"/></svg>Analytics</a>
+    <a class="rail-item " href="forecasting.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l5-5 4 4 9-10"/></svg>Forecasting</a>
+    <a class="rail-item " href="products.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.7l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.7l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>Products</a>
+    <a class="rail-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M3 21c0-4 3-6 6-6s6 2 6 6M17 11a3 3 0 100-6M21 21c0-3-1.8-5-4-5.7"/></svg>Customers</a>
+    <a class="rail-item " href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h9l5 5v15H6z"/><path d="M9 13h6M9 17h6"/></svg>Reports</a>
+    <div class="rail-foot">
+      <div class="l">Next 3 months</div>
+      <div class="v mono">$2.58M</div>
+      <div class="d">▲ warming, +3.0%</div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="topbar">
+      <div>
+        <h1>Analytics</h1>
+        <p>Category, pricing, and discount patterns</p>
+      </div>
+      <div class="range">Jan 1, 2023 – Jun 30, 2026</div>
+    </div>
+
+    <div class="filter-bar">
+      <select><option>All regions</option></select>
+      <select><option>All categories</option></select>
+      <select><option>All representatives</option></select>
+    </div>
+
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-head"><h3>Monthly sales by category</h3><span class="tag">stacked, $ revenue</span></div>
+        <svg viewBox="0 0 560 190" width="100%" height="190">
+          <g stroke="#1D242C" stroke-width="1"><line x1="0" y1="0" x2="560" y2="0"/><line x1="0" y1="63" x2="560" y2="63"/><line x1="0" y1="126" x2="560" y2="126"/><line x1="0" y1="189" x2="560" y2="189"/></g>
+          <!-- simplified bars, each a stack of 3 segments -->
+          <g>
+            <rect x="10" y="120" width="14" height="69" fill="var(--steel)"/><rect x="10" y="100" width="14" height="20" fill="var(--warm)"/><rect x="10" y="90" width="14" height="10" fill="var(--cool)"/>
+            <rect x="34" y="110" width="14" height="79" fill="var(--steel)"/><rect x="34" y="88" width="14" height="22" fill="var(--warm)"/><rect x="34" y="78" width="14" height="10" fill="var(--cool)"/>
+            <rect x="58" y="105" width="14" height="84" fill="var(--steel)"/><rect x="58" y="80" width="14" height="25" fill="var(--warm)"/><rect x="58" y="70" width="14" height="10" fill="var(--cool)"/>
+            <rect x="82" y="95" width="14" height="94" fill="var(--steel)"/><rect x="82" y="70" width="14" height="25" fill="var(--warm)"/><rect x="82" y="60" width="14" height="10" fill="var(--cool)"/>
+            <rect x="106" y="100" width="14" height="89" fill="var(--steel)"/><rect x="106" y="78" width="14" height="22" fill="var(--warm)"/><rect x="106" y="68" width="14" height="10" fill="var(--cool)"/>
+            <rect x="130" y="85" width="14" height="104" fill="var(--steel)"/><rect x="130" y="60" width="14" height="25" fill="var(--warm)"/><rect x="130" y="50" width="14" height="10" fill="var(--cool)"/>
+            <rect x="154" y="98" width="14" height="91" fill="var(--steel)"/><rect x="154" y="76" width="14" height="22" fill="var(--warm)"/><rect x="154" y="66" width="14" height="10" fill="var(--cool)"/>
+            <rect x="178" y="90" width="14" height="99" fill="var(--steel)"/><rect x="178" y="66" width="14" height="24" fill="var(--warm)"/><rect x="178" y="56" width="14" height="10" fill="var(--cool)"/>
+            <rect x="202" y="80" width="14" height="109" fill="var(--steel)"/><rect x="202" y="55" width="14" height="25" fill="var(--warm)"/><rect x="202" y="45" width="14" height="10" fill="var(--cool)"/>
+            <rect x="226" y="95" width="14" height="94" fill="var(--steel)"/><rect x="226" y="72" width="14" height="23" fill="var(--warm)"/><rect x="226" y="62" width="14" height="10" fill="var(--cool)"/>
+            <rect x="250" y="88" width="14" height="101" fill="var(--steel)"/><rect x="250" y="64" width="14" height="24" fill="var(--warm)"/><rect x="250" y="54" width="14" height="10" fill="var(--cool)"/>
+            <rect x="274" y="70" width="14" height="119" fill="var(--steel)"/><rect x="274" y="45" width="14" height="25" fill="var(--warm)"/><rect x="274" y="35" width="14" height="10" fill="var(--cool)"/>
+            <rect x="298" y="82" width="14" height="107" fill="var(--steel)"/><rect x="298" y="58" width="14" height="24" fill="var(--warm)"/><rect x="298" y="48" width="14" height="10" fill="var(--cool)"/>
+            <rect x="322" y="95" width="14" height="94" fill="var(--steel)"/><rect x="322" y="72" width="14" height="23" fill="var(--warm)"/><rect x="322" y="62" width="14" height="10" fill="var(--cool)"/>
+            <rect x="346" y="60" width="14" height="129" fill="var(--steel)"/><rect x="346" y="35" width="14" height="25" fill="var(--warm)"/><rect x="346" y="25" width="14" height="10" fill="var(--cool)"/>
+            <rect x="370" y="90" width="14" height="99" fill="var(--steel)"/><rect x="370" y="66" width="14" height="24" fill="var(--warm)"/><rect x="370" y="56" width="14" height="10" fill="var(--cool)"/>
+            <rect x="394" y="78" width="14" height="111" fill="var(--steel)"/><rect x="394" y="53" width="14" height="25" fill="var(--warm)"/><rect x="394" y="43" width="14" height="10" fill="var(--cool)"/>
+            <rect x="418" y="85" width="14" height="104" fill="var(--steel)"/><rect x="418" y="60" width="14" height="25" fill="var(--warm)"/><rect x="418" y="50" width="14" height="10" fill="var(--cool)"/>
+            <rect x="442" y="72" width="14" height="117" fill="var(--steel)"/><rect x="442" y="47" width="14" height="25" fill="var(--warm)"/><rect x="442" y="37" width="14" height="10" fill="var(--cool)"/>
+            <rect x="466" y="82" width="14" height="107" fill="var(--steel)"/><rect x="466" y="58" width="14" height="24" fill="var(--warm)"/><rect x="466" y="48" width="14" height="10" fill="var(--cool)"/>
+            <rect x="490" y="75" width="14" height="114" fill="var(--steel)"/><rect x="490" y="50" width="14" height="25" fill="var(--warm)"/><rect x="490" y="40" width="14" height="10" fill="var(--cool)"/>
+            <rect x="514" y="88" width="14" height="101" fill="var(--steel)"/><rect x="514" y="64" width="14" height="24" fill="var(--warm)"/><rect x="514" y="54" width="14" height="10" fill="var(--cool)"/>
+            <rect x="538" y="65" width="14" height="124" fill="var(--steel)"/><rect x="538" y="40" width="14" height="25" fill="var(--warm)"/><rect x="538" y="30" width="14" height="10" fill="var(--cool)"/>
+          </g>
+        </svg>
+        <div class="legend"><span><i style="background:var(--steel)"></i>Electronics</span><span><i style="background:var(--warm)"></i>Accessories</span><span><i style="background:var(--cool)"></i>Wearables</span></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>Price vs units sold</h3><span class="tag">price elasticity</span></div>
+        <svg viewBox="0 0 320 190" width="100%" height="190">
+          <g stroke="#1D242C" stroke-width="1"><line x1="0" y1="0" x2="320" y2="0"/><line x1="0" y1="63" x2="320" y2="63"/><line x1="0" y1="126" x2="320" y2="126"/><line x1="0" y1="189" x2="320" y2="189"/></g>
+          <circle cx="30" cy="150" r="5" fill="var(--steel)"/><circle cx="45" cy="148" r="5" fill="var(--steel)"/>
+          <circle cx="70" cy="120" r="5" fill="var(--warm)"/><circle cx="95" cy="115" r="5" fill="var(--warm)"/>
+          <circle cx="60" cy="155" r="5" fill="var(--cool)"/><circle cx="80" cy="158" r="5" fill="var(--cool)"/>
+          <circle cx="40" cy="55" r="5" fill="var(--warm)"/><circle cx="60" cy="60" r="5" fill="var(--warm)"/><circle cx="75" cy="45" r="5" fill="var(--warm)"/>
+          <circle cx="190" cy="35" r="5" fill="var(--text-mid)"/><circle cx="230" cy="20" r="5" fill="var(--text-mid)"/><circle cx="270" cy="12" r="5" fill="var(--text-mid)"/>
+        </svg>
+        <div class="legend"><span><i style="background:var(--warm)"></i>Accessories</span><span><i style="background:var(--steel)"></i>Wearables</span><span><i style="background:var(--cool)"></i>Home appliances</span><span><i style="background:var(--text-mid)"></i>Electronics</span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h3>Discount impact</h3><span class="tag">volume vs profitability, by discount tier</span></div>
+      <svg viewBox="0 0 900 170" width="100%" height="170">
+        <g stroke="#1D242C" stroke-width="1"><line x1="0" y1="0" x2="900" y2="0"/><line x1="0" y1="56" x2="900" y2="56"/><line x1="0" y1="112" x2="900" y2="112"/><line x1="0" y1="168" x2="900" y2="168"/></g>
+        <rect x="40" y="30" width="120" height="130" fill="var(--steel)" opacity="0.85"/>
+        <rect x="200" y="42" width="120" height="118" fill="var(--steel)" opacity="0.75"/>
+        <rect x="360" y="55" width="120" height="105" fill="var(--steel)" opacity="0.65"/>
+        <rect x="520" y="68" width="120" height="92" fill="var(--steel)" opacity="0.55"/>
+        <rect x="680" y="80" width="120" height="80" fill="var(--steel)" opacity="0.45"/>
+        <polyline points="100,150 260,140 420,132 580,120 740,108" fill="none" stroke="var(--warm)" stroke-width="2.5"/>
+      </svg>
+      <div class="legend"><span><i style="background:var(--steel)"></i>Total profit ($)</span><span><i style="background:var(--warm)"></i>Avg units sold</span></div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

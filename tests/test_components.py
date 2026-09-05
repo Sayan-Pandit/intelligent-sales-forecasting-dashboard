@@ -187,5 +187,67 @@ class TestDashboardComponents(unittest.TestCase):
         self.assertGreater(len(html), 50)
         self.assertTrue(html.strip().startswith("<div") or "<p" in html or "<h" in html)
 
+    def test_09_pdf_export_generation(self):
+        """Test PDF executive report generation produces valid PDF bytes with custom summaries."""
+        from src.export_engine import generate_pdf_report
+        import pandas as pd
+
+        df = pd.DataFrame({
+            'Date': pd.date_range(start='2024-01-01', periods=60, freq='D'),
+            'Sales_Revenue': [1000.0 + i * 20 for i in range(60)],
+            'Total_Profit': [200.0 + i * 4 for i in range(60)],
+            'Units_Sold': [10 + (i % 5) for i in range(60)],
+            'Region': ['North' if i % 2 == 0 else 'South' for i in range(60)],
+            'Product_Category': ['Tech' if i % 3 == 0 else 'Office' for i in range(60)],
+            'Product': [f'SKU-{i % 5}' for i in range(60)]
+        })
+
+        # Test monthly period PDF
+        pdf_monthly = generate_pdf_report(df, report_type="executive", period="monthly")
+        self.assertIsInstance(pdf_monthly, bytes)
+        self.assertTrue(pdf_monthly.startswith(b'%PDF-'), "Generated content should be a valid PDF format")
+        self.assertGreater(len(pdf_monthly), 2000, "PDF should contain comprehensive styled content")
+
+        # Test quarterly period PDF
+        pdf_quarterly = generate_pdf_report(df, report_type="regional", period="quarterly")
+        self.assertTrue(pdf_quarterly.startswith(b'%PDF-'))
+        self.assertGreater(len(pdf_quarterly), 2000)
+
+    def test_10_excel_export_generation(self):
+        """Test Excel workbook generation produces valid multi-sheet .xlsx bytes with formula & styles."""
+        from src.export_engine import generate_excel_report
+        import pandas as pd
+        import openpyxl
+        import io
+
+        df = pd.DataFrame({
+            'Date': pd.date_range(start='2024-01-01', periods=45, freq='D'),
+            'Sales_Revenue': [1500.0 + i * 15 for i in range(45)],
+            'Total_Profit': [300.0 + i * 3 for i in range(45)],
+            'Units_Sold': [8 + (i % 4) for i in range(45)],
+            'Region': ['East', 'West', 'Central'] * 15,
+            'Product_Category': ['Hardware', 'Software', 'Services'] * 15,
+            'Product': [f'Prod-{i % 6}' for i in range(45)]
+        })
+
+        excel_bytes = generate_excel_report(df, report_type="executive", period="monthly")
+        self.assertIsInstance(excel_bytes, bytes)
+        self.assertTrue(excel_bytes.startswith(b'PK\x03\x04'), "Generated content should be a valid zip/xlsx archive")
+
+        # Load back with openpyxl to verify sheet integrity
+        wb = openpyxl.load_workbook(io.BytesIO(excel_bytes))
+        sheet_names = wb.sheetnames
+        self.assertIn("Executive Summary", sheet_names)
+        self.assertIn("Regional Performance", sheet_names)
+        self.assertIn("Product Breakdown", sheet_names)
+        self.assertIn("Filtered Transactions", sheet_names)
+
+        # Verify Executive Summary sheet contents
+        ws_exec = wb["Executive Summary"]
+        self.assertEqual(ws_exec["A1"].value, "Executive Sales Performance & Financial Report")
+        self.assertIn("KEY PERFORMANCE INDICATORS", ws_exec["A4"].value)
+        self.assertGreater(ws_exec.max_row, 10)
+
 if __name__ == '__main__':
     unittest.main()
+

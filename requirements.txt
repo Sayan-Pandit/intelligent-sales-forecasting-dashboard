@@ -10,4 +10,5 @@ python-dotenv
 fastapi
 uvicorn
 python-multipart
+reportlab>=5.0.0
 

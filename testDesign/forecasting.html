@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Forecasting — Outlook</title>
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="rail">
+    <div class="rail-brand">
+      <div class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 15a5 5 0 015-5 6 6 0 0111 3 4 4 0 01-1 8H7a4 4 0 01-4-4z"/></svg></div>
+      <div class="nm">Outlook</div>
+    </div>
+    <a class="rail-item " href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Dashboard</a>
+    <a class="rail-item " href="analytics.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V10M12 19V5M20 19v-7"/></svg>Analytics</a>
+    <a class="rail-item active" href="forecasting.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l5-5 4 4 9-10"/></svg>Forecasting</a>
+    <a class="rail-item " href="products.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.7l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.7l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>Products</a>
+    <a class="rail-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M3 21c0-4 3-6 6-6s6 2 6 6M17 11a3 3 0 100-6M21 21c0-3-1.8-5-4-5.7"/></svg>Customers</a>
+    <a class="rail-item " href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h9l5 5v15H6z"/><path d="M9 13h6M9 17h6"/></svg>Reports</a>
+    <div class="rail-foot">
+      <div class="l">Next 3 months</div>
+      <div class="v mono">$2.58M</div>
+      <div class="d">▲ warming, +3.0%</div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="topbar">
+      <div>
+        <h1>Forecasting</h1>
+        <p>Configure predictions and compare algorithms</p>
+      </div>
+      <div class="range">Jan 1, 2023 – Jun 30, 2026</div>
+    </div>
+
+    <div class="panel" style="margin-bottom:12px;">
+      <div class="panel-head"><h3>Forecast configuration</h3><span class="tag">XGBoost Regressor · 6 month horizon</span></div>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+        <select><option>XGBoost Regressor</option></select>
+        <div style="flex:1;min-width:220px;height:4px;background:var(--line-soft);border-radius:2px;position:relative;">
+          <div style="position:absolute;left:0;top:0;bottom:0;width:55%;background:var(--steel);border-radius:2px;"></div>
+        </div>
+        <span class="btn primary">Run predictions</span>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-bottom:12px;">
+      <div class="panel-head"><h3>Forecast projection</h3><span class="tag">historical + 95% confidence interval</span></div>
+      <svg viewBox="0 0 900 220" width="100%" height="220">
+        <g stroke="#1D242C" stroke-width="1"><line x1="0" y1="0" x2="900" y2="0"/><line x1="0" y1="73" x2="900" y2="73"/><line x1="0" y1="146" x2="900" y2="146"/><line x1="0" y1="219" x2="900" y2="219"/></g>
+        <polyline points="0,170 40,150 80,158 120,120 160,138 200,90 240,125 280,75 320,110 360,55 400,100
+                   440,70 480,25 520,95 560,72 600,50 640,82 680,62 720,72 760,55 800,65"
+          fill="none" stroke="var(--text-mid)" stroke-width="1.6"/>
+        <polygon points="800,65 830,55 860,42 890,20 890,219 800,219" fill="var(--warm)" opacity="0.12"/>
+        <polyline points="800,65 830,55 860,42 890,20" fill="none" stroke="var(--warm)" stroke-width="2.4" stroke-dasharray="1 5" stroke-linecap="round"/>
+        <circle cx="800" cy="65" r="3.5" fill="var(--warm)"/>
+      </svg>
+      <div class="legend"><span><i style="background:var(--text-mid)"></i>Historical sales</span><span><i style="background:var(--warm)"></i>Forecast (Jul–Dec 2026)</span></div>
+    </div>
+
+    <div class="grid-3">
+      <div class="kpi"><div class="l">Mean absolute error</div><div class="n">$63,410</div></div>
+      <div class="kpi"><div class="l">Root mean squared error</div><div class="n">$75,788</div></div>
+      <div class="kpi"><div class="l">R² score</div><div class="n">0.95</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h3>Forecast data summary</h3><span class="tag">next 6 months</span></div>
+      <table>
+        <thead><tr><th>Month</th><th>Predicted sales</th><th>Lower bound</th><th>Upper bound</th></tr></thead>
+        <tbody>
+          <tr><td class="name">July 2026</td><td class="mono">$860,697</td><td class="mono">$844,312</td><td class="mono">$877,082</td></tr>
+          <tr><td class="name">August 2026</td><td class="mono">$828,346</td><td class="mono">$811,961</td><td class="mono">$844,731</td></tr>
+          <tr><td class="name">September 2026</td><td class="mono">$795,210</td><td class="mono">$779,004</td><td class="mono">$811,416</td></tr>
+          <tr><td class="name">October 2026</td><td class="mono">$812,050</td><td class="mono">$795,600</td><td class="mono">$828,500</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+</body>
+</html>

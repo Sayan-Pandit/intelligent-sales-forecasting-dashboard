@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard — Outlook</title>
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="rail">
+    <div class="rail-brand">
+      <div class="mk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 15a5 5 0 015-5 6 6 0 0111 3 4 4 0 01-1 8H7a4 4 0 01-4-4z"/></svg></div>
+      <div class="nm">Outlook</div>
+    </div>
+    <a class="rail-item active" href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Dashboard</a>
+    <a class="rail-item " href="analytics.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V10M12 19V5M20 19v-7"/></svg>Analytics</a>
+    <a class="rail-item " href="forecasting.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l5-5 4 4 9-10"/></svg>Forecasting</a>
+    <a class="rail-item " href="products.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.7l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.7l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>Products</a>
+    <a class="rail-item" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M3 21c0-4 3-6 6-6s6 2 6 6M17 11a3 3 0 100-6M21 21c0-3-1.8-5-4-5.7"/></svg>Customers</a>
+    <a class="rail-item " href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h9l5 5v15H6z"/><path d="M9 13h6M9 17h6"/></svg>Reports</a>
+    <div class="rail-foot">
+      <div class="l">Next 3 months</div>
+      <div class="v mono">$2.58M</div>
+      <div class="d">▲ warming, +3.0%</div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="topbar">
+      <div>
+        <h1>Dashboard</h1>
+        <p>Sales outlook, updated Jun 30</p>
+      </div>
+      <div class="range">Jan 1, 2023 – Jun 30, 2026</div>
+    </div>
+
+    <div class="panel contour-bg" style="position:relative;overflow:hidden;margin-bottom:22px;">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:16px;position:relative;">
+        <div class="archivo" style="font-size:13px;font-weight:600;color:var(--steel);">3-month outlook</div>
+        <div style="font-size:11.5px;color:var(--text-low);">XGBoost regressor · R² 0.95</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);position:relative;">
+        <div style="padding:10px 14px;border-right:1px solid var(--line-soft);"><div style="font-size:10.5px;color:var(--text-low);margin-bottom:8px;">Jul</div><div class="archivo mono" style="font-size:17px;font-weight:600;color:var(--warm);">$861K</div><div class="bar" style="margin-top:9px;"><i style="background:var(--warm);width:78%"></i></div></div>
+        <div style="padding:10px 14px;border-right:1px solid var(--line-soft);"><div style="font-size:10.5px;color:var(--text-low);margin-bottom:8px;">Aug</div><div class="archivo mono" style="font-size:17px;font-weight:600;color:var(--warm);">$828K</div><div class="bar" style="margin-top:9px;"><i style="background:var(--warm);width:71%"></i></div></div>
+        <div style="padding:10px 14px;border-right:1px solid var(--line-soft);"><div style="font-size:10.5px;color:var(--text-low);margin-bottom:8px;">Sep</div><div class="archivo mono" style="font-size:17px;font-weight:600;">$795K</div><div class="bar" style="margin-top:9px;"><i style="background:var(--steel);width:65%"></i></div></div>
+        <div style="padding:10px 14px;border-right:1px solid var(--line-soft);"><div style="font-size:10.5px;color:var(--text-low);margin-bottom:8px;">Oct</div><div class="archivo mono" style="font-size:17px;font-weight:600;">$812K</div><div class="bar" style="margin-top:9px;"><i style="background:var(--steel);width:68%"></i></div></div>
+        <div style="padding:10px 14px;border-right:1px solid var(--line-soft);"><div style="font-size:10.5px;color:var(--text-low);margin-bottom:8px;">Nov</div><div class="archivo mono" style="font-size:17px;font-weight:600;color:var(--cool);">$774K</div><div class="bar" style="margin-top:9px;"><i style="background:var(--cool);width:60%"></i></div></div>
+        <div style="padding:10px 14px;"><div style="font-size:10.5px;color:var(--text-low);margin-bottom:8px;">Dec</div><div class="archivo mono" style="font-size:17px;font-weight:600;color:var(--warm);">$902K</div><div class="bar" style="margin-top:9px;"><i style="background:var(--warm);width:85%"></i></div></div>
+      </div>
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line-soft);font-size:12.5px;color:var(--text-mid);line-height:1.55;max-width:70ch;position:relative;">Electronics is <b style="color:var(--text-hi);font-weight:600;">warming</b>, up 12.8% on last quarter. The <b style="color:var(--text-hi);font-weight:600;">South region is cooling</b>, down 8.4% — worth a local push before the next cycle.</div>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi"><div class="l">Total revenue</div><div class="n">$30.34M</div><div class="d cool">▼ 49.5% YoY</div></div>
+      <div class="kpi"><div class="l">Total profit</div><div class="n">$6,673.6K</div><div class="d cool">▼ 49.6% YoY</div></div>
+      <div class="kpi"><div class="l">Units sold</div><div class="n">75,482</div><div class="d cool">▼ 49.9% YoY</div></div>
+      <div class="kpi"><div class="l">Avg order value</div><div class="n">$611.91</div><div class="d warm">▲ 0.5% YoY</div></div>
+      <div class="kpi"><div class="l">Profit margin</div><div class="n">22.00%</div><div class="d cool">▼ 0.0% YoY</div></div>
+    </div>
+
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-head"><h3>Sales trend</h3><span class="tag">monthly revenue</span></div>
+        <svg viewBox="0 0 600 170" width="100%" height="170">
+          <defs><linearGradient id="fillT" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#4E8B93" stop-opacity="0.22"/><stop offset="100%" stop-color="#4E8B93" stop-opacity="0"/>
+          </linearGradient></defs>
+          <g stroke="#1D242C" stroke-width="1"><line x1="0" y1="0" x2="600" y2="0"/><line x1="0" y1="56" x2="600" y2="56"/><line x1="0" y1="112" x2="600" y2="112"/><line x1="0" y1="168" x2="600" y2="168"/></g>
+          <polygon points="0,140 30,120 60,128 90,95 120,110 150,70 180,100 210,60 240,90 270,45 300,80 330,55 360,20 390,75 420,58 450,40 480,65 510,50 540,58 570,44 600,52 600,170 0,170" fill="url(#fillT)"/>
+          <polyline points="0,140 30,120 60,128 90,95 120,110 150,70 180,100 210,60 240,90 270,45 300,80 330,55 360,20 390,75 420,58 450,40 480,65 510,50 540,58 570,44 600,52" fill="none" stroke="var(--steel)" stroke-width="2"/>
+        </svg>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>Model performance</h3><span class="tag">validation set</span></div>
+        <table>
+          <thead><tr><th>Model</th><th>MAE</th><th>R²</th></tr></thead>
+          <tbody>
+            <tr><td class="name">Linear Reg.</td><td class="mono">145.32</td><td class="mono">0.82</td></tr>
+            <tr><td class="name">Random Forest</td><td class="mono">103.21</td><td class="mono">0.91</td></tr>
+            <tr class="best"><td class="name">XGBoost</td><td class="mono">81.47</td><td class="mono">0.95</td></tr>
+            <tr><td class="name">MLP Regressor</td><td class="mono">85.62</td><td class="mono">0.94</td></tr>
+            <tr><td class="name">Prophet</td><td class="mono">96.78</td><td class="mono">0.92</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-head"><h3>Category breakdown</h3><span class="tag">by revenue</span></div>
+        <table>
+          <thead><tr><th>Category</th><th>Revenue</th><th>Share</th></tr></thead>
+          <tbody>
+            <tr><td class="name">Electronics</td><td class="mono">$24.12M</td><td class="mono">79.5%</td></tr>
+            <tr><td class="name">Accessories</td><td class="mono">$2.46M</td><td class="mono">8.1%</td></tr>
+            <tr><td class="name">Wearables</td><td class="mono">$1.92M</td><td class="mono">6.3%</td></tr>
+            <tr><td class="name">Others</td><td class="mono">$1.11M</td><td class="mono">3.7%</td></tr>
+            <tr><td class="name">Home appliances</td><td class="mono">$0.73M</td><td class="mono">2.4%</td></tr>
+          </tbody>
+        </table>
+        <div class="legend"><span><i style="background:var(--steel)"></i>Steady</span><span><i style="background:var(--warm)"></i>Warming</span><span><i style="background:var(--cool)"></i>Cooling</span></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>Regions</h3><span class="tag">this period</span></div>
+        <table>
+          <thead><tr><th>Region</th><th>Revenue</th><th>Trend</th></tr></thead>
+          <tbody>
+            <tr><td class="name">West</td><td class="mono">$8.41M</td><td class="mono" style="color:var(--warm)">warming</td></tr>
+            <tr><td class="name">East</td><td class="mono">$8.22M</td><td class="mono" style="color:var(--steel)">steady</td></tr>
+            <tr><td class="name">North</td><td class="mono">$7.58M</td><td class="mono" style="color:var(--steel)">steady</td></tr>
+            <tr><td class="name">South</td><td class="mono">$6.13M</td><td class="mono" style="color:var(--cool)">cooling</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

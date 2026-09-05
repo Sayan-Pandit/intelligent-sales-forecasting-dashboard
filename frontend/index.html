@@ -564,19 +564,36 @@
                     </div>
                     <p class="section-subtitle">Generate dynamic business intelligence reports with executive summary, KPIs, and operational analysis.</p>
                     
-                    <div class="forecasting-form" style="margin-bottom: 24px; display: flex; align-items: center; gap: 16px;">
-                        <div class="form-group" style="flex-grow: 1;">
+                    <div class="forecasting-form" style="margin-bottom: 24px; display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap;">
+                        <div class="form-group" style="flex: 1; min-width: 220px;">
                             <label for="report-type">Report Template</label>
                             <select id="report-type" aria-label="Choose report template">
-                                <option value="executive">Executive Performance Summary</option>
+                                <option value="executive" selected>Executive Performance Summary</option>
                                 <option value="regional">Regional &amp; Market Distribution Analysis</option>
                                 <option value="products">Product Catalogue &amp; Revenue Breakdown</option>
                             </select>
                         </div>
-                        <button class="btn-primary" id="btn-generate-report" style="align-self: flex-end;">
-                            <i data-lucide="sparkles" style="width:15px;height:15px;" aria-hidden="true"></i>
-                            Generate AI Report
-                        </button>
+                        <div class="form-group" style="width: 200px;">
+                            <label for="report-period">Summary Interval</label>
+                            <select id="report-period" aria-label="Choose summary aggregation interval">
+                                <option value="monthly" selected>Monthly Breakdown</option>
+                                <option value="quarterly">Quarterly Breakdown</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="btn-primary" id="btn-generate-report">
+                                <i data-lucide="sparkles" style="width:15px;height:15px;" aria-hidden="true"></i>
+                                Generate AI Report
+                            </button>
+                            <button class="btn-secondary" id="btn-instant-pdf" style="background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.35); color: #FCA5A5;">
+                                <i data-lucide="file-down" style="width:15px;height:15px;" aria-hidden="true"></i>
+                                Export PDF
+                            </button>
+                            <button class="btn-secondary" id="btn-instant-excel" style="background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.35); color: #6EE7B7;">
+                                <i data-lucide="file-spreadsheet" style="width:15px;height:15px;" aria-hidden="true"></i>
+                                Export Excel (.xlsx)
+                            </button>
+                        </div>
                     </div>
 
                     <div id="report-loading" class="loading-spinner" style="display:none; margin: 16px 0;" role="status" aria-live="polite">
@@ -590,7 +607,15 @@
                         <div class="dashboard-card" style="background: rgba(255,255,255,0.02); padding: 24px; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; gap: 16px; flex-wrap: wrap;">
                                 <h2 id="report-title-display" style="font-size: 16px; font-weight: 700; color: var(--text-white);">Sales Report</h2>
-                                <div style="display: flex; gap: 8px;">
+                                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                    <button class="btn-primary" id="btn-download-report-pdf" style="height: 32px; font-size: 12px; padding: 0 12px; background: rgba(239, 68, 68, 0.18); border: 1px solid rgba(239, 68, 68, 0.4); color: #FCA5A5;">
+                                        <i data-lucide="file-down" style="width: 12px; height: 12px;" aria-hidden="true"></i>
+                                        PDF Report
+                                    </button>
+                                    <button class="btn-primary" id="btn-download-report-excel" style="height: 32px; font-size: 12px; padding: 0 12px; background: rgba(16, 185, 129, 0.18); border: 1px solid rgba(16, 185, 129, 0.4); color: #6EE7B7;">
+                                        <i data-lucide="file-spreadsheet" style="width: 12px; height: 12px;" aria-hidden="true"></i>
+                                        Excel Workbook
+                                    </button>
                                     <button class="btn-primary" id="btn-download-report-txt" style="height: 32px; font-size: 12px; padding: 0 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); color: var(--text-primary); box-shadow: none;">
                                         <i data-lucide="file-text" style="width: 12px; height: 12px;" aria-hidden="true"></i>
                                         Download TXT
@@ -606,6 +631,7 @@
                             </div>
                         </div>
                     </div>
+
                 </div>
             </section>
 
@@ -694,7 +720,7 @@
         </main>
     </div>
 
-    <script src="app.js?v=8"></script>
+    <script src="app.js?v=10"></script>
 
 
     <script>
@@ -764,16 +790,19 @@
         // ── Toast system ─────────────────────────────────────────
         window.showToast = function(message, type = 'info', duration = 3500) {
             const container = document.getElementById('toast-container');
-            const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+            const icons = { success: 'check-circle-2', error: 'alert-circle', warning: 'alert-triangle', info: 'info' };
             const toast = document.createElement('div');
             toast.className = `toast toast-${type}`;
             toast.setAttribute('role', 'alert');
             toast.innerHTML = `
-                <span class="toast-icon" aria-hidden="true">${icons[type] || 'ℹ️'}</span>
+                <span class="toast-icon" aria-hidden="true"><i data-lucide="${icons[type] || 'info'}"></i></span>
                 <span class="toast-msg">${message}</span>
                 <button class="toast-close" aria-label="Dismiss notification">×</button>
             `;
             container.appendChild(toast);
+            if (window.lucide) {
+                lucide.createIcons();
+            }
             requestAnimationFrame(() => { requestAnimationFrame(() => toast.classList.add('visible')); });
 
             const dismiss = () => {

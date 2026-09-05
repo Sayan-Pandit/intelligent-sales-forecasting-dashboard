@@ -269,30 +269,43 @@ def map_and_clean_data(df, date_col, sales_col):
     else:
         df['Units_Sold'] = 1  # Default to 1 if not present
         
-    # Discount
-    discount_col = None
-    for i, col_low in enumerate(cols_low):
-        if 'discount' in col_low:
-            discount_col = df.columns[i]
-            break
-    if discount_col and discount_col not in ['Date', 'Sales_Revenue', 'Units_Sold']:
-        df['Discount'] = pd.to_numeric(df[discount_col], errors='coerce').fillna(0.0)
-        # Normalize if expressed as percentage (e.g. > 1.0)
-        if df['Discount'].max() > 1.0:
-            df['Discount'] = df['Discount'] / 100.0
-    else:
-        df['Discount'] = 0.0
-        
     # Price Per Unit
     price_col = None
     for i, col_low in enumerate(cols_low):
         if 'price' in col_low or 'rate' in col_low:
             price_col = df.columns[i]
             break
-    if price_col and price_col not in ['Date', 'Sales_Revenue', 'Units_Sold', 'Discount']:
+    if price_col and price_col not in ['Date', 'Sales_Revenue', 'Units_Sold']:
         df['Price_Per_Unit'] = pd.to_numeric(df[price_col], errors='coerce').fillna(df['Sales_Revenue'])
     else:
-        df['Price_Per_Unit'] = df['Sales_Revenue']
+        units_denom = df['Units_Sold'].replace(0, 1)
+        df['Price_Per_Unit'] = (df['Sales_Revenue'] / units_denom).round(2)
+
+    # Discount
+    discount_col = None
+    for i, col_low in enumerate(cols_low):
+        if 'discount' in col_low:
+            discount_col = df.columns[i]
+            break
+    if discount_col and discount_col not in ['Date', 'Sales_Revenue', 'Units_Sold', 'Price_Per_Unit']:
+        df['Discount'] = pd.to_numeric(df[discount_col], errors='coerce').fillna(0.0)
+        # Normalize if expressed as percentage (e.g. > 1.0)
+        if df['Discount'].max() > 1.0:
+            df['Discount'] = df['Discount'] / 100.0
+    else:
+        # Check if MSRP / List Price exists to calculate implied discount
+        msrp_col = None
+        for i, col_low in enumerate(cols_low):
+            if col_low in ['msrp', 'list_price', 'listprice', 'retail_price', 'retailprice', 'original_price', 'base_price']:
+                msrp_col = df.columns[i]
+                break
+        if msrp_col and msrp_col not in ['Date', 'Sales_Revenue', 'Units_Sold', 'Price_Per_Unit']:
+            msrp_vals = pd.to_numeric(df[msrp_col], errors='coerce').fillna(0.0)
+            ppu_vals = df['Price_Per_Unit']
+            implied_disc = np.where(msrp_vals > 0, (msrp_vals - ppu_vals) / msrp_vals, 0.0)
+            df['Discount'] = np.clip(implied_disc, 0.0, 0.90).astype(float).round(4)
+        else:
+            df['Discount'] = 0.0
 
     # Region
     region_col = None
@@ -328,15 +341,25 @@ def map_and_clean_data(df, date_col, sales_col):
 
     # Product
     prod_col = None
-    for i, col_low in enumerate(cols_low):
-        if col_low in ['product', 'item', 'sku', 'product_name']:
-            prod_col = df.columns[i]
-            break
-    if not prod_col:
+    exact_prod_keys = [
+        'productcode', 'product_code', 'product_id', 'productid', 'sku',
+        'item_code', 'itemcode', 'item_id', 'itemid', 'product_name',
+        'productname', 'item_name', 'itemname', 'product', 'item', 'model', 'title'
+    ]
+    for key in exact_prod_keys:
         for i, col_low in enumerate(cols_low):
-            if 'product' in col_low or 'item' in col_low or 'name' in col_low:
+            if col_low == key and df.columns[i] != cat_col:
                 prod_col = df.columns[i]
                 break
+        if prod_col:
+            break
+
+    if not prod_col:
+        for i, col_low in enumerate(cols_low):
+            if df.columns[i] != cat_col and df.columns[i] not in ['Date', 'Sales_Revenue', 'Units_Sold', 'Discount', 'Price_Per_Unit', 'Region'] and any(k in col_low for k in ['code', 'sku', 'item', 'product']):
+                prod_col = df.columns[i]
+                break
+
     if prod_col and prod_col not in ['Date', 'Sales_Revenue', 'Units_Sold', 'Discount', 'Price_Per_Unit', 'Region']:
         df['Product'] = df[prod_col].astype(str).fillna('Standard Product')
     elif cat_col and cat_col not in ['Date', 'Sales_Revenue', 'Units_Sold', 'Discount', 'Price_Per_Unit', 'Region']:

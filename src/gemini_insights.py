@@ -74,10 +74,11 @@ def generate_gemini_insights_helper(df_filtered):
             f"Regional Sales: {json.dumps(region_summary)}\n"
             f"Category Sales: {json.dumps(cat_summary)}\n\n"
             "Return ONLY a raw JSON array (no markdown, no code fences). Each element must have:\n"
-            '  "icon": one emoji\n'
-            '  "text": 1-2 sentence plain text insight (no HTML tags, no apostrophes inside strings)\n'
+            '  "icon": one of ["trending-up", "trending-down", "map-pin", "layers", "sparkles"]\n'
+            '  "type": one of ["growth", "risk", "region", "category"]\n'
+            '  "text": 1-2 sentence plain text insight (no HTML tags, no emojis, no apostrophes inside strings)\n'
             "Example: "
-            '[{"icon":"📈","text":"Revenue grew strongly this quarter."},{"icon":"🔻","text":"South region lags others."}]'
+            '[{"icon":"trending-up","type":"growth","text":"Revenue grew strongly this quarter."},{"icon":"alert-triangle","type":"risk","text":"South region lags others."}]'
         )
 
         model_name = os.environ.get("GEMINI_MODEL", "gemini-3.6-flash")
@@ -103,16 +104,26 @@ def generate_gemini_insights_helper(df_filtered):
             if isinstance(parsed, list) and len(parsed) > 0:
                 validated = []
                 for item in parsed[:4]:
-                    icon = item.get("icon", "💡")
+                    raw_icon = str(item.get("icon", "sparkles"))
+                    # Map any residual emojis to Lucide names
+                    icon_map = {
+                        "📈": "trending-up", "🟢": "trending-up",
+                        "📉": "trending-down", "🔴": "trending-down", "🔻": "alert-triangle",
+                        "💡": "map-pin", "📍": "map-pin",
+                        "⚡": "layers", "📦": "layers"
+                    }
+                    icon = icon_map.get(raw_icon, raw_icon if raw_icon in ["trending-up", "trending-down", "map-pin", "layers", "sparkles", "alert-triangle"] else "sparkles")
                     text = str(item.get("text", "")).strip()
                     if text:
-                        # Wrap numbers in colored bold spans for visual consistency
+                        # Strip emojis from text
+                        text = re.sub(r'[\U00010000-\U0010ffff\u2600-\u26FF\u2700-\u27BF]', '', text).strip()
+                        # Wrap numbers in themed steel teal bold spans
                         text = re.sub(
                             r'\$[\d,]+(?:\.\d+)?[KMB]?',
-                            lambda m: f"<b style='color:#00CC96;'>{m.group()}</b>",
+                            lambda m: f"<b style='color:#4E8B93;'>{m.group()}</b>",
                             text
                         )
-                        validated.append({"icon": icon, "text": text})
+                        validated.append({"icon": icon, "text": text, "type": item.get("type", "growth")})
                 if validated:
                     _insights_cache[cache_key] = (time.time(), validated)
                     return validated
