@@ -1,41 +1,107 @@
-# Intelligent Sales Forecasting Dashboard
+# Intelligent Sales Forecasting & Business Intelligence Dashboard
 
-[![Python Version](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-009688.svg)](https://fastapi.tiangolo.com/)
-[![Streamlit](https://img.shields.io/badge/Streamlit-1.25%2B-FF4B4B.svg)](https://streamlit.io/)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Python Version](https://img.shields.io/badge/Python-3.9%2B-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Plotly](https://img.shields.io/badge/Plotly.js-2.26%2B-3F4F75.svg?logo=plotly&logoColor=white)](https://plotly.com/javascript/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.25%2B-FF4B4B.svg?logo=streamlit&logoColor=white)](https://streamlit.io/)
+[![ReportLab](https://img.shields.io/badge/ReportLab-PDF%20Engine-D12B2B.svg)](https://www.reportlab.com/)
+[![OpenPyXL](https://img.shields.io/badge/OpenPyXL-Excel%20Engine-217346.svg?logo=microsoftexcel&logoColor=white)](https://openpyxl.readthedocs.io/)
+[![Google Gemini](https://img.shields.io/badge/Google%20Gemini-2.5%20%2F%201.5%20Flash-8E75B2.svg?logo=google&logoColor=white)](https://ai.google.dev/)
+[![Tests](https://img.shields.io/badge/Tests-10%2F10%20Passing-brightgreen.svg)](tests/test_components.py)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-An enterprise-grade, hybrid sales forecasting and business intelligence dashboard. Built with a modern **FastAPI** REST backend, a sleek **Vanilla JS + Plotly.js** glassmorphic frontend UI, and a secondary **Streamlit** dashboard fallback. Powered by four machine learning forecasting models and Google Gemini 1.5 Flash AI insights.
+An enterprise-grade, hybrid sales forecasting and predictive business intelligence platform. Built with a high-performance **FastAPI** asynchronous REST backend, a sleek **Vanilla JS + CSS3 Glassmorphic** frontend UI with Plotly.js visualizations, automated **Executive PDF & Excel Reporting Engines**, and a secondary **Streamlit** dashboard fallback.
+
+Powered by 5 machine learning forecasting engines with dynamic benchmark evaluation and hybrid **Google Gemini AI** strategic insights.
 
 ---
 
 ## 🌟 Key Features
 
-- 📊 **Executive BI Dashboard**: Real-time sales KPIs (Revenue, Profit, Units Sold, Average Order Value, Operating Margin) with YoY growth trends and interactive region/category filtering.
-- 🤖 **4 ML Forecasting Engines**:
-  - **Prophet / Trend-Seasonal**: Captures annual/weekly seasonality and long-term trend lines.
-  - **Random Forest Regressor**: Detrended, non-linear ensemble with leaf regularization.
-  - **XGBoost Regressor**: Gradient boosting with L1/L2 regularization and subsampling.
-  - **MLP Neural Network**: Multi-Layer Perceptron with standard scaling and detrending.
-- ⚡ **Interactive What-If Revenue Simulator**: Simulate the impact of discount strategies, marketing spend, and price changes on future revenue.
-- 📑 **AI Report Generator**: Generates executive-ready sales reports (Executive, Regional, Product Breakdown) via Google Gemini 1.5 Flash API or structured fallback rules.
-- 💡 **AI Insights Engine**: Hybrid AI module delivering 4 actionable business recommendations per view using Gemini API or rule-based heuristics.
-- 📁 **Universal Data Ingestion & Mapping**: Supports custom CSV and Excel file uploads with auto-mapping heuristics for date and sales columns.
-- 🧪 **Overfitting & Stress Test Suite**: Benchmark suite to evaluate model stability under clean seasonality, high noise, and structural trend breaks.
+### 1. 📊 Executive BI Dashboard & Telemetry
+- **Real-Time Financial KPIs**: Instant calculation of Gross Revenue, Operating Profit, Total Units Sold, Average Order Value (AOV), and Operating Profit Margin.
+- **Dynamic Year-over-Year (YoY) Growth Indicators**: Calculates period-over-period percentage expansion/contraction with contextual badge styling.
+- **Data-Driven Dynamic Alerts**: Real-time risk detection engine analyzing month-over-month sales velocity, product margin compression (<25%), price elasticity erosion, and transaction variance anomalies.
+- **Interactive Global Distribution**: Country-level choropleth visualization and category contribution donut charts.
+- **Top Product Matrix**: Ranking of top revenue drivers with volume, unit price, and portfolio share breakdown.
+
+### 2. 🤖 5 Machine Learning Forecasting Engines
+- **Prophet / Seasonal-Trend Decomposition**: Models annual/weekly seasonality, growth saturation, and long-term trend trajectories with upper/lower confidence bounds.
+- **XGBoost Regressor**: Gradient boosting machine utilizing lagged sales features, rolling averages, and L1/L2 regularization.
+- **Random Forest Regressor**: Detrended non-linear ensemble with bootstrap aggregation and leaf regularization.
+- **Multi-Layer Perceptron (MLP Neural Network)**: Feed-forward deep architecture with feature standardization and detrended residual learning.
+- **Linear Regression Baseline**: Fast ordinary least squares benchmark model.
+- **Dynamic Model Evaluation**: Real-time comparative ranking across Mean Absolute Error (MAE), Root Mean Squared Error (RMSE), and Coefficient of Determination ($R^2$).
+
+### 3. ⚡ What-If Revenue Scenario Simulator
+- Test revenue sensitivity against real-world business interventions.
+- Interactive multi-parameter adjustments:
+  - **Promotional Discount Tuning** (e.g., assessing margin erosion vs. unit velocity).
+  - **Marketing Spend Scaling** (calculating incremental CAC and return on ad spend).
+  - **Price Elasticity Shifts** (modeling customer demand reactions).
+
+### 4. 📑 Enterprise Multi-Format Export Engine
+- **Executive PDF Reports (`src/export_engine.py`)**:
+  - Generated on-the-fly via ReportLab with corporate branding, custom typography, KPI summary cards, tabular financial performance, and executive commentary.
+  - Supports direct browser download with native attachment headers.
+- **Multi-Tab Excel Workbooks (`openpyxl`)**:
+  - Formatted workbooks featuring an **Executive Summary** tab (styled KPI blocks, category totals with Excel `SUM` formulas, currency formatting) and a raw **Sales Transactions** ledger tab.
+  - Formatted headers, alternating zebra striping, and auto-fitted column widths.
+- **Interactive HTML Reports (`src/reports_generator.py`)**:
+  - In-browser printable preview with executive, regional, or category-specific focus.
+
+### 5. 🧠 Hybrid AI Strategic Insights
+- Seamlessly connects to **Google Gemini AI** (`gemini-2.5-flash` or `gemini-1.5-flash`) via official SDK and fallback endpoints.
+- Synthesizes sales trajectory, territory performance, and margin risks into four executive-ready bullet points.
+- **Heuristic Fallback Engine**: If an API key is omitted or the service encounters rate limits/outages, the system automatically falls back to deterministic rule-based business logic without crashing.
+
+### 6. 📁 Universal Data Ingestion & Auto-Mapping
+- Drag-and-drop support for custom **CSV** and **Excel (.xlsx, .xls)** datasets.
+- Smart schema heuristic detector automatically recognizes Date and Sales Revenue columns regardless of naming conventions (`TransactionDate`, `Order_Date`, `Total_Amount`, `Gross_Sales`, etc.).
+- One-click dataset reset to default benchmark sample data.
 
 ---
 
-## 🏗️ High-Level Architecture
+## 🏗️ System Architecture
 
 ```mermaid
-graph TD
-    Client[Vanilla JS Frontend / HTML5 + Plotly.js] -->|HTTP REST API| API[FastAPI Server server.py]
-    Client2[Streamlit UI app.py] -->|Direct Call| DS[Data Science Engine src/]
-    API -->|Data Preprocessing| Prep[src/preprocessing.py]
-    API -->|Model Training & Forecast| FC[src/forecasting.py]
-    API -->|AI Insights| AI[src/gemini_insights.py]
-    API -->|Report Generation| RG[src/reports_generator.py]
-    AI -->|REST Request| Gemini[Google Gemini 1.5 Flash API]
+flowchart TD
+    subgraph Client Layer
+        WebUI["Modern Web App<br/>(HTML5 / Vanilla CSS3 / Plotly.js / Lucide)"]
+        StreamlitUI["Legacy Streamlit App<br/>(Streamlit / Python)"]
+    end
+
+    subgraph Backend Layer [FastAPI Server - server.py]
+        Router["FastAPI REST Endpoints<br/>/api/*"]
+        AlertsEngine["Dynamic Telemetry Engine<br/>generate_dynamic_alerts()"]
+        Cache["In-Memory DataFrame Cache<br/>& Filter Pipeline"]
+    end
+
+    subgraph Core Engine [src/]
+        Prep["preprocessing.py<br/>Data Ingestion & Feature Engineering"]
+        FC["forecasting.py<br/>Prophet, XGBoost, RF, MLP, Linear Regression"]
+        Export["export_engine.py<br/>ReportLab PDF & openpyxl Excel Engine"]
+        ReportGen["reports_generator.py<br/>HTML & Markdown Report Compiler"]
+        Gemini["gemini_insights.py<br/>Hybrid Gemini AI & Heuristics"]
+    end
+
+    subgraph External Services & Storage
+        GoogleAI["Google Gemini AI API<br/>(gemini-2.5-flash)"]
+        Storage[("Local Data Store<br/>data/*.csv, *.xlsx")]
+    end
+
+    WebUI -->|HTTP REST / JSON / Blobs| Router
+    StreamlitUI -->|Direct Function Calls| Core Engine
+    Router --> AlertsEngine
+    Router --> Cache
+    Cache --> Prep
+    Cache --> FC
+    Cache --> Export
+    Cache --> ReportGen
+    Cache --> Gemini
+    Gemini -->|Prompt / Response| GoogleAI
+    Prep --> Storage
+    Export -->|Binary Stream| Router
 ```
 
 ---
@@ -44,100 +110,140 @@ graph TD
 
 ```text
 intelligent-sales-forecasting-dashboard/
-├── server.py                     # Modern FastAPI web application backend
-├── app.py                        # Legacy Streamlit frontend application
-├── requirements.txt              # Project dependencies
-├── README.md                     # Technical documentation
-├── .env                          # Environment variables configuration
-├── frontend/                     # Custom Vanilla JS Frontend UI
-│   ├── index.html                # HTML5 structure & layout
-│   ├── app.js                    # State management, Plotly rendering, API fetch calls
-│   └── style.css                 # Glassmorphic dark design system & responsive styling
-├── src/                          # Modular Data Science Core
-│   ├── preprocessing.py          # Data ingestion, cleaning, feature engineering
-│   ├── forecasting.py            # ML forecasting algorithms (Prophet, RF, XGB, MLP)
-│   ├── visualization.py          # Plotly figure wrappers (Streamlit interface)
-│   ├── gemini_insights.py        # Gemini API integration & cache engine
-│   ├── reports_generator.py      # HTML/Text report compilation
-│   ├── sample_generator.py       # Synthetic realistic transaction data generator
-│   ├── generate_test_datasets.py # Stress test dataset generator
-│   └── check_overfitting.py      # Overfitting evaluation benchmark script
-├── tests/                        # Unit test suite
-│   └── test_components.py        # Automated test suite (8 tests)
-└── data/                         # CSV/Excel data directory
+├── server.py                     # High-performance FastAPI backend & REST routes
+├── app.py                        # Alternative Streamlit dashboard application
+├── requirements.txt              # Production and development dependencies
+├── README.md                     # Comprehensive technical documentation
+├── .env                          # Local environment variables configuration
+├── frontend/                     # Modern Web Client Application
+│   ├── index.html                # Responsive layout, modals, and metric components
+│   ├── app.js                    # State management, Plotly rendering, API fetch orchestration
+│   └── style.css                 # Glassmorphism dark design system, micro-animations
+├── src/                          # Modular Analytics & ML Core
+│   ├── export_engine.py          # Corporate PDF (ReportLab) & Excel (openpyxl) generation
+│   ├── forecasting.py            # 5 ML forecasting models (Prophet, RF, XGB, MLP, Linear)
+│   ├── preprocessing.py          # Data validation, cleaning, and feature engineering
+│   ├── gemini_insights.py        # Gemini API client & deterministic heuristic fallback
+│   ├── reports_generator.py      # Executive HTML/Text summary generator
+│   ├── sample_generator.py       # Multi-year realistic retail transaction generator
+│   ├── visualization.py          # Plotly figure factories (Streamlit UI)
+│   ├── check_overfitting.py      # Multi-model stress test & overfitting benchmark
+│   └── generate_test_datasets.py # Stress test scenario generator (noise, trend breaks)
+├── tests/                        # Automated Verification Suite
+│   └── test_components.py        # 10 comprehensive unit tests (API, ML, Exports, Alerts)
+└── data/                         # CSV and Excel storage directory
 ```
 
 ---
 
 ## ⚙️ Installation & Setup
 
-### 1. Prerequisites
-- Python 3.9 or higher installed.
-
-### 2. Install Dependencies
+### 1. Clone & Navigate
 ```bash
+git clone https://github.com/Sayan-Pandit/intelligent-sales-forecasting-dashboard.git
+cd intelligent-sales-forecasting-dashboard
+```
+
+### 2. Set Up Python Virtual Environment
+**Windows (PowerShell):**
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
+**macOS / Linux:**
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+### 3. Install Dependencies
+```bash
+pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### 3. Configure Environment Variables
-Create or edit the `.env` file in the root directory:
+### 4. Configure Environment Variables
+Create a `.env` file in the project root (or update the existing one):
 ```env
+# Google Gemini API Configuration (Optional)
 GEMINI_API_KEY=your_google_gemini_api_key_here
-GEMINI_MODEL=gemini-1.5-flash
+GEMINI_MODEL=gemini-2.5-flash
 ```
-*Note: If `GEMINI_API_KEY` is not provided or API calls fail, the dashboard seamlessly falls back to a deterministic rule-based insight & report generator.*
+> [!NOTE]
+> If `GEMINI_API_KEY` is not provided or Gemini is temporarily unavailable, the dashboard automatically falls back to deterministic rule-based business intelligence insights.
 
 ---
 
-## 🚀 Running the Application
+## 🚀 Running the Platform
 
-### Option A: Modern Web Application (FastAPI + JS Frontend) — Recommended
-Start the FastAPI server:
+### Option 1: Modern Web Application (Recommended)
+Launch the FastAPI backend and web server:
 ```bash
-uvicorn server:app --reload --port 8000
+# Using uvicorn directly
+uvicorn server:app --reload --host 127.0.0.1 --port 8000
+
+# Or via Python runner
+python server.py
 ```
 Open your browser and navigate to:
 ```text
 http://127.0.0.1:8000/
 ```
 
-### Option B: Legacy Streamlit Application
-Start the Streamlit dashboard:
+### Option 2: Alternative Streamlit Dashboard
+To launch the Streamlit implementation:
 ```bash
 streamlit run app.py
 ```
 
 ---
 
-## 🧪 Testing & Verification
+## 🔌 API Endpoint Documentation
 
-### Run Unit Tests
-To execute the automated unit test suite:
+| Method | Endpoint | Description | Request Payload / Params |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/config` | Retrieves date boundaries, unique regions, and product categories. | `date_col`, `sales_col` (optional query params) |
+| `POST` | `/api/dashboard` | Returns calculated KPIs, trends, map data, product catalogue, dynamic alerts, and AI insights. | `DashboardRequest` (JSON: date bounds, regions, categories) |
+| `POST` | `/api/forecast` | Executes training of chosen ML model and returns multi-period predictions and accuracy metrics. | `ForecastRequest` (JSON: model choice, horizon, filters) |
+| `POST` | `/api/analytics` | Returns category trends, price elasticity scatter data, and discount performance. | `DashboardRequest` (JSON) |
+| `POST` | `/api/report` | Returns an HTML executive summary report formatted for browser printing. | `ReportRequest` (JSON: report type, period, filters) |
+| `POST` | `/api/export/pdf` | Streams an executive PDF document generated via ReportLab. | `ReportRequest` (JSON) |
+| `GET` | `/api/export/pdf` | Direct browser download URL for executive PDF report. | Query parameters: `report_type`, `period`, `regions`, etc. |
+| `POST` | `/api/export/excel` | Streams a styled multi-tab Excel workbook generated via openpyxl. | `ReportRequest` (JSON) |
+| `GET` | `/api/export/excel` | Direct browser download URL for Excel workbook. | Query parameters: `report_type`, `period`, `regions`, etc. |
+| `POST` | `/api/upload` | Uploads a custom CSV or Excel dataset and suggests column mappings. | `multipart/form-data` with `file` |
+| `POST` | `/api/reset-datasource` | Reverts the active dataset to the default pre-packaged retail dataset. | Empty JSON `{}` |
+
+---
+
+## 🧪 Testing & Validation
+
+### Automated Unit Test Suite
+The project includes an automated unit test suite covering data preprocessing, model execution, dynamic alert generation, PDF export, and Excel workbook compilation:
 ```bash
-python -m unittest discover tests
+python -m unittest discover -s tests
 ```
+*Current test status: **10/10 tests passing**.*
 
-### Run Model Overfitting & Stress Test Benchmark
-To evaluate models against noisy data and structural trend breaks:
+### Overfitting & Model Robustness Evaluation
+Benchmark model performance under noisy conditions, seasonality shifts, and structural trend breaks:
 ```bash
 python src/check_overfitting.py
 ```
 
 ---
 
-## 🔌 API Reference Summary
+## 🛠️ Technology Stack
 
-| Endpoint | Method | Description |
-| :--- | :--- | :--- |
-| `GET /api/config` | GET | Returns dataset date bounds, available regions, and product categories |
-| `POST /api/dashboard` | POST | Returns calculated KPIs, trends, map data, product breakdowns, and AI insights |
-| `POST /api/forecast` | POST | Executes model training (Prophet, RF, XGB, MLP) and returns multi-month predictions |
-| `POST /api/analytics` | POST | Returns category trend breakdown, elasticity, and discount analysis datasets |
-| `POST /api/report` | POST | Generates an executive summary HTML report |
-| `POST /api/upload` | POST | Handles CSV/Excel file uploads and auto-detects column mappings |
-| `POST /api/reset-datasource` | POST | Reverts dataset to default sample data |
+- **Backend Framework**: [FastAPI](https://fastapi.tiangolo.com/), [Uvicorn](https://www.uvicorn.org/), [Pydantic](https://docs.pydantic.dev/)
+- **Frontend & Visualizations**: Vanilla HTML5/CSS3, JavaScript (ES6+), [Plotly.js](https://plotly.com/javascript/), [Lucide Icons](https://lucide.dev/)
+- **Machine Learning & Time Series**: [scikit-learn](https://scikit-learn.org/), [XGBoost](https://xgboost.readthedocs.io/), [Prophet](https://facebook.github.io/prophet/)
+- **Document & Spreadsheet Engines**: [ReportLab](https://www.reportlab.com/), [OpenPyXL](https://openpyxl.readthedocs.io/)
+- **AI & Analytics**: [Google Gemini API](https://ai.google.dev/), [Pandas](https://pandas.pydata.org/), [NumPy](https://numpy.org/)
+- **Alternative UI**: [Streamlit](https://streamlit.io/)
 
 ---
 
 ## 📜 License
-Distributed under the MIT License.
+Distributed under the **MIT License**. See `LICENSE` for more information.
