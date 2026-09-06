@@ -41,11 +41,20 @@ if [ ! -f ".env" ] && [ -f ".env.example" ]; then
 fi
 
 # 5. Install / Verify dependencies
-echo "[3/4] Checking and installing dependencies from requirements.txt..."
+echo "[3/5] Checking and installing dependencies from requirements.txt..."
 pip install -r requirements.txt --quiet || echo "[WARNING] Some dependencies had warnings. Continuing..."
 
-# 6. Launch Application and open browser
-echo "[4/4] Starting server at http://127.0.0.1:8000 ..."
+# 6. Generate Dataset First before starting the server
+echo "[4/5] Preparing sales dataset..."
+python -m src.sample_generator
+if [ ! -f "data/sample_sales_data.csv" ]; then
+    echo "[ERROR] Dataset generation failed. Could not find data/sample_sales_data.csv."
+    exit 1
+fi
+echo "[4/5] Dataset verified: data/sample_sales_data.csv"
+
+# 7. Launch Application and open browser
+echo "[5/5] Starting server at http://127.0.0.1:8000 ..."
 echo "Press Ctrl+C to stop the server."
 echo ""
 
@@ -57,3 +66,4 @@ elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
 fi
 
 python -m uvicorn server:app --host 127.0.0.1 --port 8000 --reload
+

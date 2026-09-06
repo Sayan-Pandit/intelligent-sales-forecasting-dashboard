@@ -139,7 +139,7 @@ If you prefer automatic setup, use the provided one-click launcher scripts:
 - **Windows**: Double-click [`run.bat`](run.bat) (or execute `.\run.bat` in terminal).
 - **macOS / Linux**: Run `chmod +x run.sh && ./run.sh`.
 
-*These scripts automatically detect Python, create `.venv`, install all packages from `requirements.txt`, initialize `.env` from `.env.example`, launch the application server, and open `http://127.0.0.1:8000` in your default browser.*
+*These scripts automatically detect Python, create `.venv`, install all packages from `requirements.txt`, initialize `.env` from `.env.example`, generate the sample sales dataset, launch the application server, and open `http://127.0.0.1:8000` in your default browser.*
 
 ---
 
