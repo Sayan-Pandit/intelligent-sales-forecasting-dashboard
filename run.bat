@@ -6,31 +6,49 @@ echo       Intelligent Sales Forecasting Dashboard - One-Click Launcher
 echo ======================================================================
 echo.
 
-:: 1. Check if Python is installed
+:: 1. Check Python command (try python, then py)
+set PYTHON_CMD=
 python --version >nul 2>&1
-if errorlevel 1 (
+if not errorlevel 1 (
+    set PYTHON_CMD=python
+) else (
+    py --version >nul 2>&1
+    if not errorlevel 1 (
+        set PYTHON_CMD=py
+    )
+)
+
+if "%PYTHON_CMD%"=="" (
     echo [ERROR] Python is not installed or not in your PATH.
     echo Please install Python 3.10, 3.11, or 3.12 from https://www.python.org/
+    echo Make sure to check the box "Add python.exe to PATH" during installation.
+    echo.
     pause
     exit /b 1
 )
 
 :: 2. Check and initialize virtual environment
 if not exist ".venv" (
-    echo [1/4] Creating virtual environment (.venv)...
-    python -m venv .venv
+    echo [1/4] Creating virtual environment .venv...
+    %PYTHON_CMD% -m venv .venv
     if errorlevel 1 (
         echo [ERROR] Failed to create virtual environment.
         pause
         exit /b 1
     )
 ) else (
-    echo [1/4] Virtual environment found (.venv).
+    echo [1/4] Virtual environment found: .venv
 )
 
 :: 3. Activate virtual environment
 echo [2/4] Activating virtual environment...
-call .venv\Scripts\activate.bat
+if exist ".venv\Scripts\activate.bat" (
+    call .venv\Scripts\activate.bat
+) else (
+    echo [ERROR] Virtual environment activation script not found.
+    pause
+    exit /b 1
+)
 
 :: 4. Copy .env.example to .env if .env doesn't exist
 if not exist ".env" (
@@ -42,7 +60,7 @@ if not exist ".env" (
 
 :: 5. Install / Verify dependencies
 echo [3/4] Checking and installing dependencies from requirements.txt...
-pip install -r requirements.txt --quiet
+python -m pip install -r requirements.txt --quiet
 if errorlevel 1 (
     echo [WARNING] Some dependencies could not be installed automatically. Attempting to launch anyway...
 )
