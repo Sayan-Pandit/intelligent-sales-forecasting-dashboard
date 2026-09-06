@@ -40,3 +40,7 @@ data/*.csv
 data/*.xlsx
 data/*.xls
 
+# Archives
+*.zip
+*.tar.gz
+
