@@ -3,14 +3,13 @@
 [![Python Version](https://img.shields.io/badge/Python-3.9%2B-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Plotly](https://img.shields.io/badge/Plotly.js-2.26%2B-3F4F75.svg?logo=plotly&logoColor=white)](https://plotly.com/javascript/)
-[![Streamlit](https://img.shields.io/badge/Streamlit-1.25%2B-FF4B4B.svg?logo=streamlit&logoColor=white)](https://streamlit.io/)
 [![ReportLab](https://img.shields.io/badge/ReportLab-PDF%20Engine-D12B2B.svg)](https://www.reportlab.com/)
 [![OpenPyXL](https://img.shields.io/badge/OpenPyXL-Excel%20Engine-217346.svg?logo=microsoftexcel&logoColor=white)](https://openpyxl.readthedocs.io/)
 [![Google Gemini](https://img.shields.io/badge/Google%20Gemini-2.5%20%2F%201.5%20Flash-8E75B2.svg?logo=google&logoColor=white)](https://ai.google.dev/)
 [![Tests](https://img.shields.io/badge/Tests-10%2F10%20Passing-brightgreen.svg)](tests/test_components.py)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-An enterprise-grade, hybrid sales forecasting and predictive business intelligence platform. Built with a high-performance **FastAPI** asynchronous REST backend, a sleek **Vanilla JS + CSS3 Glassmorphic** frontend UI with Plotly.js visualizations, automated **Executive PDF & Excel Reporting Engines**, and a secondary **Streamlit** dashboard fallback.
+An enterprise-grade, sales forecasting and predictive business intelligence platform. Built with a high-performance **FastAPI** asynchronous REST backend, a sleek **Vanilla JS + CSS3 Glassmorphic** frontend UI with Plotly.js visualizations, and automated **Executive PDF & Excel Reporting Engines**.
 
 Powered by 5 machine learning forecasting engines with dynamic benchmark evaluation and hybrid **Google Gemini AI** strategic insights.
 
@@ -68,7 +67,6 @@ Powered by 5 machine learning forecasting engines with dynamic benchmark evaluat
 flowchart TD
     subgraph Client Layer
         WebUI["Modern Web App<br/>(HTML5 / Vanilla CSS3 / Plotly.js / Lucide)"]
-        StreamlitUI["Legacy Streamlit App<br/>(Streamlit / Python)"]
     end
 
     subgraph Backend Layer [FastAPI Server - server.py]
@@ -91,7 +89,6 @@ flowchart TD
     end
 
     WebUI -->|HTTP REST / JSON / Blobs| Router
-    StreamlitUI -->|Direct Function Calls| Core Engine
     Router --> AlertsEngine
     Router --> Cache
     Cache --> Prep
@@ -111,7 +108,6 @@ flowchart TD
 ```text
 intelligent-sales-forecasting-dashboard/
 ├── server.py                     # High-performance FastAPI backend & REST routes
-├── app.py                        # Alternative Streamlit dashboard application
 ├── requirements.txt              # Production and development dependencies
 ├── README.md                     # Comprehensive technical documentation
 ├── .env                          # Local environment variables configuration
@@ -126,7 +122,7 @@ intelligent-sales-forecasting-dashboard/
 │   ├── gemini_insights.py        # Gemini API client & deterministic heuristic fallback
 │   ├── reports_generator.py      # Executive HTML/Text summary generator
 │   ├── sample_generator.py       # Multi-year realistic retail transaction generator
-│   ├── visualization.py          # Plotly figure factories (Streamlit UI)
+│   ├── visualization.py          # Plotly figure factories & chart utilities
 │   ├── check_overfitting.py      # Multi-model stress test & overfitting benchmark
 │   └── generate_test_datasets.py # Stress test scenario generator (noise, trend breaks)
 ├── tests/                        # Automated Verification Suite
@@ -138,13 +134,24 @@ intelligent-sales-forecasting-dashboard/
 
 ## ⚙️ Installation & Setup
 
-### 1. Clone & Navigate
+### ⚡ One-Click Instant Start (Zero Setup Friction)
+If you prefer automatic setup, use the provided one-click launcher scripts:
+- **Windows**: Double-click [`run.bat`](run.bat) (or execute `.\run.bat` in terminal).
+- **macOS / Linux**: Run `chmod +x run.sh && ./run.sh`.
+
+*These scripts automatically detect Python, create `.venv`, install all packages from `requirements.txt`, initialize `.env` from `.env.example`, launch the application server, and open `http://127.0.0.1:8000` in your default browser.*
+
+---
+
+### Manual Setup (Step-by-Step)
+
+#### 1. Clone & Navigate
 ```bash
 git clone https://github.com/Sayan-Pandit/intelligent-sales-forecasting-dashboard.git
 cd intelligent-sales-forecasting-dashboard
 ```
 
-### 2. Set Up Python Virtual Environment
+#### 2. Set Up Virtual Environment
 **Windows (PowerShell):**
 ```powershell
 python -m venv .venv
@@ -157,7 +164,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-### 3. Install Dependencies
+#### 3. Install Dependencies
 ```bash
 pip install --upgrade pip
 pip install -r requirements.txt
@@ -189,12 +196,6 @@ python server.py
 Open your browser and navigate to:
 ```text
 http://127.0.0.1:8000/
-```
-
-### Option 2: Alternative Streamlit Dashboard
-To launch the Streamlit implementation:
-```bash
-streamlit run app.py
 ```
 
 ---
@@ -241,7 +242,6 @@ python src/check_overfitting.py
 - **Machine Learning & Time Series**: [scikit-learn](https://scikit-learn.org/), [XGBoost](https://xgboost.readthedocs.io/), [Prophet](https://facebook.github.io/prophet/)
 - **Document & Spreadsheet Engines**: [ReportLab](https://www.reportlab.com/), [OpenPyXL](https://openpyxl.readthedocs.io/)
 - **AI & Analytics**: [Google Gemini API](https://ai.google.dev/), [Pandas](https://pandas.pydata.org/), [NumPy](https://numpy.org/)
-- **Alternative UI**: [Streamlit](https://streamlit.io/)
 
 ---
 

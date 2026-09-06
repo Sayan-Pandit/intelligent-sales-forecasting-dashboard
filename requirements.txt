@@ -3,7 +3,6 @@ prophet
 scikit-learn
 xgboost
 plotly
-streamlit
 openpyxl
 requests
 python-dotenv
